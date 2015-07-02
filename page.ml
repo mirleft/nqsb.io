@@ -46,6 +46,7 @@ let content =
   and hannesm = github ^ "hannesm/"
   and wp = "https://en.wikipedia.org/wiki/"
   and doc = "https://mirleft.github.io/ocaml-"
+  and blog = "https://mirage.io/blog/"
   in
   let a_pinata    = link ~href:"http://ownme.ipredator.se" <:html<BTC Piñata>>
   and a_tls       = link ~href:(mirleft ^ "ocaml-tls") <:html<TLS>>
@@ -65,6 +66,16 @@ let content =
   and a_wp_tls    = link ~href:(wp ^ "Transport_Layer_Security") <:html<WP: TLS>>
   and a_paper     = link ~href:"/nqsbtls-usenix-security15.pdf" <:html<Usenix Security 2015 paper>>
   and a_mirage    = link ~href:"https://mirage.io" <:html<MirageOS>>
+
+  and a_blog_intro    = link ~href:(blog ^ "introducing-ocaml-tls") <:html<Introducing transport layer security (TLS) in pure OCaml>>
+  and a_blog_nc       = link ~href:(blog ^ "introducing-nocrypto") <:html<Building the nocrypto library core>>
+  and a_blog_x509     = link ~href:(blog ^ "introducing-x509") <:html<Adventures in X.509 certificate parsing and validation>>
+  and a_blog_asn1     = link ~href:(blog ^ "introducing-asn1") <:html<ASN.1 and notation embedding>>
+  and a_blog_attacks  = link ~href:(blog ^ "ocaml-tls-api-internals-attacks-mitigation") <:html<Protocol implementation and mitigations to known attacks>>
+  and a_blog_pinata   = link ~href:(blog ^ "announcing-bitcoin-pinata") <:html<Smash the Bitcoin Pinata for fun and profit!>>
+  and a_blog_why      = link ~href:(blog ^ "why-ocaml-tls") <:html<Why OCaml-TLS?>>
+  and a_blog_mirage25 = link ~href:(blog ^ "announcing-mirage-25-release") <:html<MirageOS v2.5 with full TLS support>>
+  and a_blog_pinata_results = link ~href:(blog ^ "bitcoin-pinata-results") <:html<Reviewing the Bitcoin Pinata>>
   in
   <:html<
 
@@ -102,6 +113,22 @@ let content =
         <li><p>$a_certify$, which handles certificates, certificate signing requests, and basic CA functionality</p></li>
         <li><p>$a_tracechk$, which lets you validate recorded TLS sessions</p></li>
         <li><p>$a_jackline$, a terminal XMPP client using OTR and TLS</p></li>
+      </ul>
+
+      <br/>
+
+      <p>Blog articles about nqsb at mirage.io:</p>
+
+      <ul>
+        <li><p>29 Jun 2015: $a_blog_pinata_results$</p></li>
+        <li><p>26 Jun 2015: $a_blog_mirage25$</p></li>
+        <li><p>26 Jun 2015: $a_blog_why$</p></li>
+        <li><p>10 Feb 2015: $a_blog_pinata$</p></li>
+        <li><p>14 Jul 2014: $a_blog_attacks$</p></li>
+        <li><p>11 Jul 2014: $a_blog_asn1$</p></li>
+        <li><p>10 Jul 2014: $a_blog_x509$</p></li>
+        <li><p>9 Jul 2014: $a_blog_nc$</p></li>
+        <li><p>8 Jul 2014: $a_blog_intro$</p></li>
       </ul>
 
       <p>Thanks to $a_ipredator$ for hosting.</p>
