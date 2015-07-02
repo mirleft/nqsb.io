@@ -55,12 +55,14 @@ let content =
   and a_asn1      = link ~href:(mirleft ^ "ocaml-asn1-combinators") <:html<ASN.1>>
   and a_tls_doc   = link ~href:(doc ^ "tls") <:html<API documentation>>
   and a_x509_doc  = link ~href:(doc ^ "x509") <:html<API documentation>>
+  and a_nc_doc    = link ~href:(doc ^ "nocrypto") <:html<API documentation>>
   and a_tracechk  = link ~href:(hannesm ^ "trace-checker") <:html<pcap trace checker>>
   and a_tlstunnel = link ~href:(hannesm ^ "tlstunnel") <:html<tlstunnel>>
   and a_tlsclient = link ~href:(hannesm ^ "tlsclient") <:html<tlsclient>>
   and a_jackline  = link ~href:(hannesm ^ "jackline") <:html<jackline>>
   and a_certify   = link ~href:(github ^ "yomimono/ocaml-certify") <:html<certify>>
   and a_otr       = link ~href:(hannesm ^ "ocaml-otr") <:html<OTR>>
+  and a_otr_doc   = link ~href:"https://hannesm.github.io/ocaml-otr" <:html<API documentation>>
   and a_handshake = link ~href:"https://tls.openmirage.org" <:html<TLS handshake visualisation>>
   and a_ipredator = link ~href:"https://www.ipredator.se" <:html<IPredator>>
   and a_wp_tls    = link ~href:(wp ^ "Transport_Layer_Security") <:html<WP: TLS>>
@@ -95,9 +97,8 @@ let content =
         <li><p>$a_tls$ ($a_tls_doc$), the most widely used security protocol on the Internet ($a_wp_tls$)</p></li>
         <li><p>$a_x509$ ($a_x509_doc$) certificate handling (including public and private RSA keys (PKCS8), certificate signing requests (PKCS10))</p></li>
         <li><p>$a_asn1$ parser and unparser combinators</p></li>
-        <li><p>$a_nocrypto$ underlying cryptographic primitives (symmetric: 3DES, AES; hash: MD5, SHA 1, SHA 2; asymmetric: DH, DSA, RSA; CSPRNG: Fortuna; ECB/CBC/CCM/GCM modes)</p></li>
-        <br/>
-        <li><p>$a_otr$, the Off-the-record protocol</p></li>
+        <li><p>$a_nocrypto$ ($a_nc_doc$) underlying cryptographic primitives (symmetric: 3DES, AES; hash: MD5, SHA 1, SHA 2; asymmetric: DH, DSA, RSA; CSPRNG: Fortuna; ECB/CBC/CCM/GCM modes)</p></li>
+        <li><p>$a_otr$ ($a_otr_doc$), the Off-the-record protocol</p></li>
       </ul>
 
       <br/>
