@@ -78,6 +78,7 @@ let content =
   and a_blog_why      = link ~href:(blog ^ "why-ocaml-tls") <:html<Why OCaml-TLS?>>
   and a_blog_mirage25 = link ~href:(blog ^ "announcing-mirage-25-release") <:html<MirageOS v2.5 with full TLS support>>
   and a_blog_pinata_results = link ~href:(blog ^ "bitcoin-pinata-results") <:html<Reviewing the Bitcoin Pinata>>
+  and a_31c3 = link ~href:"http://media.ccc.de/browse/congress/2014/31c3_-_6443_-_en_-_saal_2_-_201412271245_-_trustworthy_secure_modular_operating_system_engineering_-_hannes_-_david_kaloper.html#video" <:html<31c3 talk: Trustworthy secure modular operating system engineering>>
   in
   <:html<
 
@@ -118,13 +119,14 @@ let content =
 
       <br/>
 
-      <p>Blog articles about nqsb at mirage.io:</p>
+      <p>Media about nqsb at mirage.io:</p>
 
       <ul>
         <li><p>29 Jun 2015: $a_blog_pinata_results$</p></li>
         <li><p>26 Jun 2015: $a_blog_mirage25$</p></li>
         <li><p>26 Jun 2015: $a_blog_why$</p></li>
         <li><p>10 Feb 2015: $a_blog_pinata$</p></li>
+        <li><p>27 December 2014: $a_31c3$</p></li>
         <li><p>14 Jul 2014: $a_blog_attacks$</p></li>
         <li><p>11 Jul 2014: $a_blog_asn1$</p></li>
         <li><p>10 Jul 2014: $a_blog_x509$</p></li>
