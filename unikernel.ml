@@ -50,7 +50,8 @@ struct
 
   let header content_type = http_header
       ~status:"HTTP/1.1 200 OK"
-      [ ("content-type", content_type) ]
+      [ ("content-type", content_type) ;
+        ("Strict-Transport-Security", "max-age=31536000; includeSubDomains") ]
 
   let cut_line str =
     match Stringext.cut str ~on:"GET " with
@@ -91,8 +92,7 @@ struct
 
   let moved_permanently = http_header
       ~status:"HTTP/1.1 301 Moved permanently"
-      [ ("location", "https://nqsb.io") ;
-        ("Strict-Transport-Security", "max-age=31536000; includeSubDomains") ]
+      [ ("location", "https://nqsb.io") ]
 
   let h_notice c =
     fun tcp ->
