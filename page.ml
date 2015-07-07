@@ -66,7 +66,7 @@ let content =
   and a_handshake = link ~href:"https://tls.openmirage.org" <:html<TLS handshake visualisation>>
   and a_ipredator = link ~href:"https://www.ipredator.se" <:html<IPredator>>
   and a_wp_tls    = link ~href:(wp ^ "Transport_Layer_Security") <:html<WP: TLS>>
-  and a_paper     = link ~href:"/nqsbtls-usenix-security15.pdf" <:html<Usenix Security 2015 paper>>
+  and a_paper     = link ~href:"/nqsbtls-usenix-security15.pdf" <:html<Not-quite-so-broken TLS: lessons in re-engineering a security protocol specification and implementation>>
   and a_mirage    = link ~href:"https://mirage.io" <:html<MirageOS>>
 
   and a_blog_intro    = link ~href:(blog ^ "introducing-ocaml-tls") <:html<Introducing transport layer security (TLS) in pure OCaml>>
@@ -96,7 +96,8 @@ let content =
 
       <p><i>Not-quite-so-broken</i> is the theme of our re-engineered approach to security protocol specification and implementation that addresses these root causes.  The same code serves two roles: it is both a specification, executable as a test oracle to check conformance of traces from arbitrary implementations, and a usable implementation; a modular and declarative programming style provides clean separation between its components.  Many security flaws are thus excluded by construction.</p>
 
-      <p>Read more in our $a_paper$.  We implemented some libraries in OCaml using this approach:</p>
+      <p>Read more in our paper: $a_paper$ by David Kaloper-Meršinjak, Hannes
+Mehnert, Anil Madhavapeddy and Peter Sewell, published at Usenix Security 2015.  We implemented some libraries in OCaml using this approach:</p>
 
       <ul>
         <li><p>$a_tls$ ($a_tls_doc$), the most widely used security protocol on the Internet ($a_wp_tls$)</p></li>
