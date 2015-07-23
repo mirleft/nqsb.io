@@ -58,6 +58,7 @@ let content =
   and a_nc_doc    = link ~href:(doc ^ "nocrypto") <:html<API documentation>>
   and a_tracechk  = link ~href:(hannesm ^ "trace-checker") <:html<pcap trace checker>>
   and a_tlstunnel = link ~href:(hannesm ^ "tlstunnel") <:html<tlstunnel>>
+  and a_seal      = link ~href:(github ^ "mirage/mirage-seal") <:html<mirage-seal>>
   and a_tlsclient = link ~href:(hannesm ^ "tlsclient") <:html<tlsclient>>
   and a_jackline  = link ~href:(hannesm ^ "jackline") <:html<jackline>>
   and a_certify   = link ~href:(github ^ "yomimono/ocaml-certify") <:html<certify>>
@@ -78,7 +79,8 @@ let content =
   and a_blog_why      = link ~href:(blog ^ "why-ocaml-tls") <:html<Why OCaml-TLS?>>
   and a_blog_mirage25 = link ~href:(blog ^ "announcing-mirage-25-release") <:html<MirageOS v2.5 with full TLS support>>
   and a_blog_pinata_results = link ~href:(blog ^ "bitcoin-pinata-results") <:html<Reviewing the Bitcoin Pinata>>
-  and a_blog_seal = link ~href:(blog ^ "mirage-seal") <:html<Easy HTTPS Unikernels with mirage-seal>>
+  and a_blog_seal     = link ~href:(blog ^ "mirage-seal") <:html<Easy HTTPS Unikernels with mirage-seal>>
+  and a_blog_entropy  = link ~href:(blog ^ "mirage-entropy") <:html<Organized chaos: managing randomness>>
   and a_31c3 = link ~href:"http://media.ccc.de/browse/congress/2014/31c3_-_6443_-_en_-_saal_2_-_201412271245_-_trustworthy_secure_modular_operating_system_engineering_-_hannes_-_david_kaloper.html#video" <:html<31c3 talk: Trustworthy secure modular operating system engineering>>
   and a_ohm8 = link ~href:"http://monoxyd.de/20150408-ohm-008-ohne-heftige-mangel" <:html<(german) OHM #008 – Ohne Heftige Mängel: TLS und dessen Probleme; robuste Implementierung von Sicherheitsprotokollen; OCaml-TLS und MirageOS>>
   and a_amir_pinata = link ~href:"http://amirchaudhry.com/bitcoin-pinata/" <:html<Amir's post>>
@@ -117,17 +119,19 @@ Mehnert, Anil Madhavapeddy and Peter Sewell, published at Usenix Security 2015. 
         <li><p>$a_pinata$, our bitcoin bait</p></li>
         <li><p>$a_handshake$, our interactive visualisation</p></li>
         <li><p>$a_tlstunnel$, an application handling TLS, forwarding the plaintext to another service via TCP</p></li>
+        <li><p>$a_seal$, an application which produces a stand-alone unikernel serving a directory via https</p></li>
         <li><p>$a_tlsclient$, a TLS client</p></li>
-        <li><p>$a_certify$, which handles certificates, certificate signing requests, and basic CA functionality</p></li>
-        <li><p>$a_tracechk$, which lets you validate recorded TLS sessions</p></li>
         <li><p>$a_jackline$, a terminal XMPP client using OTR and TLS</p></li>
+        <li><p>$a_certify$, an application to generate certificates, certificate signing requests, and basic CA signing</p></li>
+        <li><p>$a_tracechk$, which lets you validate recorded TLS sessions</p></li>
       </ul>
 
       <br/>
 
-      <p>Media about nqsb at mirage.io:</p>
+      <p>Media about nqsb:</p>
 
       <ul>
+        <li><p>22 Jul 2015: $a_blog_entropy$</p></li>
         <li><p>7 Jul 2015: $a_blog_seal$</p></li>
         <li><p>29 Jun 2015: $a_blog_pinata_results$</p></li>
         <li><p>26 Jun 2015: $a_blog_mirage25$</p></li>
