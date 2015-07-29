@@ -138,7 +138,7 @@ Mehnert, Anil Madhavapeddy and Peter Sewell, published at Usenix Security 2015. 
         <li><p>26 Jun 2015: $a_blog_why$</p></li>
         <li><p>4 Apr 2015: $a_ohm8$</p></li>
         <li><p>10 Feb 2015: $a_blog_pinata$ ($a_amir_pinata$, $a_mirage_pinata$, $a_golem_pinata$)</p></li>
-        <li><p>27 December 2014: $a_31c3$</p></li>
+        <li><p>27 Dec 2014: $a_31c3$</p></li>
         <li><p>14 Jul 2014: $a_blog_attacks$</p></li>
         <li><p>11 Jul 2014: $a_blog_asn1$</p></li>
         <li><p>10 Jul 2014: $a_blog_x509$</p></li>
