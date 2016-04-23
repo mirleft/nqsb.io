@@ -54,9 +54,6 @@ struct
     read_kv kv name >|= fun data ->
     [ header "application/pdf" ; data ]
 
-  let err = http_header
-      ~status:"HTTP/1.1 404 Not found" [ ("content-type", "text/plain") ]
-
   let tls_accept ~tag ~f c cfg tcp =
     let peer = TCP.get_dest tcp in
     let log  = log c tag peer in
