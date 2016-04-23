@@ -64,8 +64,8 @@ struct
     in
     with_tls_server @@ function
     | `Error e -> log ("TLS failed" ^ TLS.error_message e) ; TCP.close tcp
-    | `Eof     -> log "TLS eof"    ; TCP.close tcp
-    | `Ok tls  -> f log tls >>= fun _ -> TLS.close tls
+    | `Eof     -> log "TLS eof" ; TCP.close tcp
+    | `Ok tls  -> TLS.writev tls (f log tls) >>= fun _ -> TLS.close tls
 
   let moved_permanently = http_header
       ~status:"HTTP/1.1 301 Moved permanently"
@@ -79,21 +79,19 @@ struct
       | _        -> log "responded"   ; TCP.close tcp
 
   let dispatch nqsb usenix tron log tls =
-    let out = match TLS.epoch tls with
-      | `Ok e ->
-        let data = match e.Tls.Core.own_name with
-          | Some "usenix15.nqsb.io" -> log "serving usenix" ; usenix
-          | Some "tron.nqsb.io" ->  log "serving tron" ; tron
-          | Some "nqsb.io" ->  log "serving nqsb.io" ; nqsb
-          | Some x -> log ("SNI is " ^ x) ; nqsb
-          | None -> log "no sni" ; nqsb
-        in
-        data
-      | `Error ->
-        log "error while getting epoch" ;
-        nqsb
-    in
-    TLS.writev tls out
+    match TLS.epoch tls with
+    | `Ok e ->
+      let data = match e.Tls.Core.own_name with
+        | Some "usenix15.nqsb.io" -> log "serving usenix" ; usenix
+        | Some "tron.nqsb.io" ->  log "serving tron" ; tron
+        | Some "nqsb.io" ->  log "serving nqsb.io" ; nqsb
+        | Some x -> log ("SNI is " ^ x) ; nqsb
+        | None -> log "no sni" ; nqsb
+      in
+      data
+    | `Error ->
+      log "error while getting epoch" ;
+      nqsb
 
   let start con stack kv _clock keys _ =
     let d_nqsb = Page.render in
