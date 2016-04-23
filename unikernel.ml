@@ -36,7 +36,7 @@ struct
 
   let log c tag (ip, port) msg =
     let pre = Printf.sprintf "[%s] %s:%d " tag (Ipaddr.V4.to_string ip) port in
-    let data = Printf.sprintf "%s%.04f %s\n" pre (Clock.time ()) msg in
+    let data = Printf.sprintf "%s%.04f %s" pre (Clock.time ()) msg in
     C.log c data
 
   let http_header ~status xs =
