@@ -82,10 +82,10 @@ struct
       | None -> log "no sni" ; nqsb
 
   let start con stack kv _clock keys _ =
-    let d_nqsb = Page.render in
+    let d_nqsb = [ header "text/html;charset=utf-8" ; Page.render ] in
     read_pdf kv "nqsbtls-usenix-security15.pdf" >>= fun d_usenix ->
     read_pdf kv "tron.pdf" >>= fun d_tron ->
-    let f = dispatch [d_nqsb] d_usenix d_tron in
+    let f = dispatch d_nqsb d_usenix d_tron in
 
     read_cert keys "nqsb" >>= fun c_nqsb ->
     read_cert keys "usenix15" >>= fun c_usenix ->
