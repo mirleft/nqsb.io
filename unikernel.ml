@@ -1,14 +1,6 @@
 open Lwt.Infix
 open V1_LWT
 
-module Http = struct
-  let headers status xs =
-    let headers = List.map (fun (k, v) -> k ^ ": " ^ v) xs in
-    let lines   = status :: headers @ [ "\r\n" ] in
-    Cstruct.of_string (String.concat "\r\n" lines)
-end
-
-
 module Main (C : CONSOLE) (S : STACKV4) (KV : KV_RO) (Clock : V1.CLOCK) (KEYS : KV_RO) =
 struct
 
