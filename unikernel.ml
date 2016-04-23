@@ -63,7 +63,7 @@ struct
     let with_tls_server k = TLS.server_of_flow cfg tcp >>= k
     in
     with_tls_server @@ function
-    | `Error _ -> log "TLS failed" ; TCP.close tcp
+    | `Error e -> log ("TLS failed" ^ TLS.error_message e) ; TCP.close tcp
     | `Eof     -> log "TLS eof"    ; TCP.close tcp
     | `Ok tls  -> f log tls >>= fun _ -> TLS.close tls
 
