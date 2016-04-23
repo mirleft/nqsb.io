@@ -13,3 +13,6 @@ mir-*
 *.xe
 *.xl
 *.xl.in
+
+certs/
+private_key.*
