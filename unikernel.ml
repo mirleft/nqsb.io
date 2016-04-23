@@ -23,8 +23,8 @@ struct
      | `RSA key -> key)
 
   let log c tag (ip, port) msg =
-    C.log c (Printf.sprintf "[%s] %s:%d %.04f %s"
-               tag (Ipaddr.V4.to_string ip) port (Clock.time ()) msg)
+    C.log c (Printf.sprintf "%.04f [%s] %s:%d %s"
+               (Clock.time ()) tag (Ipaddr.V4.to_string ip) port  msg)
 
   let http_header ~status xs =
     let headers = List.map (fun (k, v) -> k ^ ": " ^ v) xs in
