@@ -1,25 +1,25 @@
 open Lwt.Infix
 open V1_LWT
 
-module Main (C : CONSOLE) (S : STACKV4) (KV : KV_RO) (Clock : V1.CLOCK) (KEYS : KV_RO) =
+module Main (C : CONSOLE) (S : STACKV4) (KEYS : KV_RO) (KV : KV_RO) (Clock : V1.CLOCK) =
 struct
   module TCP   = S.TCPV4
   module TLS   = Tls_mirage.Make (TCP)
 
   let read_key kv name =
     KEYS.size kv name >>= function
-    | `Ok size ->
-      KEYS.read kv name 0 (Int64.to_int size) >>= (function
-          | `Ok cs -> Lwt.return (Cstruct.copyv cs)
-          | `Error (KEYS.Unknown_key e) -> Lwt.fail (Invalid_argument e))
     | `Error (KEYS.Unknown_key e) -> Lwt.fail (Invalid_argument e)
+    | `Ok size ->
+      KEYS.read kv name 0 (Int64.to_int size) >>= function
+      | `Error (KEYS.Unknown_key e) -> Lwt.fail (Invalid_argument e)
+      | `Ok cs -> Lwt.return (Cstruct.concat cs)
 
   let read_cert kv name =
     read_key kv (name ^ ".pem") >>= fun chain ->
     read_key kv (name ^ ".key") >|= fun key ->
     let open X509.Encoding.Pem in
-    (Certificate.of_pem_cstruct (Cstruct.of_string chain),
-     match Private_key.of_pem_cstruct1 (Cstruct.of_string key) with
+    (Certificate.of_pem_cstruct chain,
+     match Private_key.of_pem_cstruct1 key with
      | `RSA key -> key)
 
   let log c tag (ip, port) msg =
@@ -39,10 +39,10 @@ struct
 
   let read_kv kv name =
     KV.size kv name >>= function
-    | `Error (KV.Unknown_key _) -> Lwt.fail (Invalid_argument name)
+    | `Error (KV.Unknown_key e) -> Lwt.fail (Invalid_argument e)
     | `Ok size ->
       KV.read kv name 0 (Int64.to_int size) >>= function
-      | `Error (KV.Unknown_key _) -> Lwt.fail (Invalid_argument name)
+      | `Error (KV.Unknown_key e) -> Lwt.fail (Invalid_argument e)
       | `Ok bufs -> Lwt.return (Cstruct.concat bufs)
 
   let read_pdf kv name =
@@ -81,7 +81,7 @@ struct
       | Some x -> log ("SNI is " ^ x) ; nqsb
       | None -> log "no sni" ; nqsb
 
-  let start con stack kv _clock keys _ =
+  let start con stack keys kv _clock _ =
     let d_nqsb = [ header "text/html;charset=utf-8" ; Page.render ] in
     read_pdf kv "nqsbtls-usenix-security15.pdf" >>= fun d_usenix ->
     read_pdf kv "tron.pdf" >>= fun d_tron ->

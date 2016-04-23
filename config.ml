@@ -12,8 +12,6 @@ let net =
   | `Xen  -> direct_stackv4_with_static_ipv4 default_console tap0 server
 
 
-let kv = crunch "disk"
-
 let () =
   let packages = ["tls"; "tcpip"; "tyxml"]
   and libraries = ["tls.mirage"; "tyxml"]
@@ -24,10 +22,10 @@ let () =
       ~libraries
       ~packages
       "Unikernel.Main"
-      ( console @-> stackv4 @-> kv_ro @-> clock @-> kv_ro @-> job )
+      ( console @-> stackv4 @-> kv_ro @-> kv_ro @-> clock @-> job )
     $ default_console
     $ net
-    $ kv
-    $ default_clock
     $ crunch "tls"
+    $ crunch "disk"
+    $ default_clock
   ]
