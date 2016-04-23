@@ -3,7 +3,6 @@ open V1_LWT
 
 module Main (C : CONSOLE) (S : STACKV4) (KV : KV_RO) (Clock : V1.CLOCK) (KEYS : KV_RO) =
 struct
-
   module TCP   = S.TCPV4
   module TLS   = Tls_mirage.Make (TCP)
 
@@ -19,17 +18,13 @@ struct
     read_key kv (name ^ ".pem") >>= fun chain ->
     read_key kv (name ^ ".key") >|= fun key ->
     let open X509.Encoding.Pem in
-    let chain = Certificate.of_pem_cstruct (Cstruct.of_string chain)
-    and key =
-      match Private_key.of_pem_cstruct1 (Cstruct.of_string key) with
-      | `RSA key -> key
-    in
-    (chain, key)
+    (Certificate.of_pem_cstruct (Cstruct.of_string chain),
+     match Private_key.of_pem_cstruct1 (Cstruct.of_string key) with
+     | `RSA key -> key)
 
   let log c tag (ip, port) msg =
-    let pre = Printf.sprintf "[%s] %s:%d " tag (Ipaddr.V4.to_string ip) port in
-    let data = Printf.sprintf "%s%.04f %s" pre (Clock.time ()) msg in
-    C.log c data
+    C.log c (Printf.sprintf "[%s] %s:%d %.04f %s"
+               tag (Ipaddr.V4.to_string ip) port (Clock.time ()) msg)
 
   let http_header ~status xs =
     let headers = List.map (fun (k, v) -> k ^ ": " ^ v) xs in
@@ -77,18 +72,14 @@ struct
 
   let dispatch nqsb usenix tron log tls =
     match TLS.epoch tls with
+    | `Error -> log "error while getting epoch" ; nqsb
     | `Ok e ->
-      let data = match e.Tls.Core.own_name with
-        | Some "usenix15.nqsb.io" -> log "serving usenix" ; usenix
-        | Some "tron.nqsb.io" ->  log "serving tron" ; tron
-        | Some "nqsb.io" ->  log "serving nqsb.io" ; nqsb
-        | Some x -> log ("SNI is " ^ x) ; nqsb
-        | None -> log "no sni" ; nqsb
-      in
-      data
-    | `Error ->
-      log "error while getting epoch" ;
-      nqsb
+      match e.Tls.Core.own_name with
+      | Some "usenix15.nqsb.io" -> log "serving usenix" ; usenix
+      | Some "tron.nqsb.io" ->  log "serving tron" ; tron
+      | Some "nqsb.io" ->  log "serving nqsb.io" ; nqsb
+      | Some x -> log ("SNI is " ^ x) ; nqsb
+      | None -> log "no sni" ; nqsb
 
   let start con stack kv _clock keys _ =
     let d_nqsb = Page.render in
@@ -104,5 +95,4 @@ struct
     S.listen_tcpv4 stack ~port:80 (h_notice con) ;
     S.listen_tcpv4 stack ~port:443 (tls_accept ~tag:"web-server" ~f con config) ;
     S.listen stack
-
 end
