@@ -3,6 +3,7 @@ _build
 log
 Makefile
 main.ml
+key_gen.ml
 static*.ml*
 main.native
 mir-*
@@ -11,5 +12,4 @@ mir-*
 *.xml
 *.xe
 *.xl
-
-/disk/tls/*.key
+*.xl.in

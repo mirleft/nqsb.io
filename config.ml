@@ -8,21 +8,26 @@ let server = address "198.167.222.201" "255.255.255.0" "198.167.222.1"
 
 let net =
   match get_mode () with
-  | `Unix -> direct_stackv4_with_default_ipv4 default_console (netif "tap9")
-  (*  | `Xen  -> direct_stackv4_with_dhcp default_console tap0 *)
+  | `Unix -> socket_stackv4 default_console [Ipaddr.V4.any]
   | `Xen  -> direct_stackv4_with_static_ipv4 default_console tap0 server
 
 
 let kv = crunch "disk"
 
 let () =
-  add_to_opam_packages ["tls"; "tcpip"; "cow"; "stringext"] ;
-  add_to_ocamlfind_libraries ["tls.mirage"; "cow"; "cow.syntax"; "stringext"] ;
+  let packages = ["tls"; "tcpip"; "tyxml"; "astring"]
+  and libraries = ["tls.mirage"; "tyxml"; "astring"]
+  in
   register "nqsb.io" [
-    foreign "Unikernel.Main"
-      ( console @-> stackv4 @-> kv_ro @-> clock @-> job )
-      $ default_console
-      $ net
-      $ kv
-      $ default_clock
+    foreign
+      ~deps:[abstract nocrypto]
+      ~libraries
+      ~packages
+      "Unikernel.Main"
+      ( console @-> stackv4 @-> kv_ro @-> clock @-> kv_ro @-> job )
+    $ default_console
+    $ net
+    $ kv
+    $ default_clock
+    $ crunch "tls"
   ]

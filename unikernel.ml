@@ -1,4 +1,4 @@
-open Lwt
+open Lwt.Infix
 open V1
 open V1_LWT
 
@@ -10,12 +10,12 @@ module Http = struct
 end
 
 
-module Main (C : CONSOLE) (S : STACKV4) (KV : KV_RO) (Clock : CLOCK) =
+module Main (C : CONSOLE) (S : STACKV4) (KV : KV_RO) (Clock : CLOCK) (KEYS : KV_RO) =
 struct
 
   module TCP  = S.TCPV4
   module TLS  = Tls_mirage.Make (TCP)
-  module X509 = Tls_mirage.X509 (KV) (Clock)
+  module X509 = Tls_mirage.X509 (KEYS) (Clock)
 
   let log c tag (ip, port) msg =
     let pre = Printf.sprintf "[%s] %s:%d " tag (Ipaddr.V4.to_string ip) port in
@@ -26,15 +26,14 @@ struct
     let file = "assets" ^ name in
     KV.size kv file
     >>= function
-      | `Error (KV.Unknown_key _) -> fail (Invalid_argument name)
+      | `Error (KV.Unknown_key _) -> Lwt.fail (Invalid_argument name)
       | `Ok size ->
          KV.read kv file 0 (Int64.to_int size)
          >>= function
-           | `Error (KV.Unknown_key _) -> fail (Invalid_argument name)
-           | `Ok bufs -> return (Nocrypto.Uncommon.Cs.concat bufs)
+           | `Error (KV.Unknown_key _) -> Lwt.fail (Invalid_argument name)
+           | `Ok bufs -> Lwt.return (Cstruct.concat bufs)
 
   let content_type path =
-    let open String in
     try
       let idx = String.index path '.' + 1 in
       let rt = String.sub path idx (String.length path - idx) in
@@ -54,30 +53,30 @@ struct
         ("Strict-Transport-Security", "max-age=31536000; includeSubDomains") ]
 
   let cut_line str =
-    match Stringext.cut str ~on:"GET " with
+    match Astring.String.cut ~sep:"GET " str with
     | None -> None
-    | Some (_, right) -> match Stringext.cut right ~on:" HTTP" with
+    | Some (_, right) -> match Astring.String.cut ~sep:" HTTP" right with
       | None -> None
       | Some (left, _) -> Some left
 
   let err = http_header
       ~status:"HTTP/1.1 404 Not found" [ ("content-type", "text/plain") ]
 
-  let dispatch c kv data tls =
-    try_lwt
+  let dispatch _c kv data tls =
+    Lwt.catch (fun () ->
       TLS.read tls >>= function
-        | `Ok req ->
-         (match cut_line (Cstruct.to_string req) with
-          | None -> fail (Invalid_argument "couldn't parse request")
-          | Some "/" -> TLS.writev tls [ header "text/html; charset=UTF-8"; data ]
-          | Some x when x = "/nqsbtls-usenix-security15.pdf" ->
-            read_kv kv x >>= fun data ->
-            let ct = content_type x in
-            TLS.writev tls [ header ct; data ]
-          | Some _ -> fail (Invalid_argument "unknown resource"))
-       | _ -> fail (Invalid_argument "couldn't read")
-    with _ ->
-      TLS.writev tls [ err ; Cstruct.of_string "Not found" ]
+      | `Ok req ->
+        (match cut_line (Cstruct.to_string req) with
+         | None -> invalid_arg "couldn't parse request"
+         | Some "/" -> TLS.writev tls [ header "text/html; charset=UTF-8"; data ]
+         | Some x when x = "/nqsbtls-usenix-security15.pdf" ->
+           read_kv kv x >>= fun data ->
+           let ct = content_type x in
+           TLS.writev tls [ header ct; data ]
+         | Some _ -> invalid_arg "unknown resource")
+      | _ -> invalid_arg "couldn't read")
+      (fun _e ->
+        TLS.writev tls [ err ; Cstruct.of_string "Not found" ])
 
   let tls_accept ~tag c cfg tcp ~f =
     let peer = TCP.get_dest tcp in
@@ -87,7 +86,7 @@ struct
     with_tls_server @@ function
     | `Error _ -> log "TLS failed" ; TCP.close tcp
     | `Eof     -> log "TLS eof"    ; TCP.close tcp
-    | `Ok tls  -> log "TLS ok"     ; f tls >> TLS.close tls
+    | `Ok tls  -> log "TLS ok"     ; f tls >>= fun _ -> TLS.close tls
 
 
   let moved_permanently = http_header
@@ -104,8 +103,8 @@ struct
   let h_as_web_server c kv data cfg =
     tls_accept ~tag:"web-server" c cfg ~f:(dispatch c kv data)
 
-  let start con stack kv _ =
-    X509.certificate kv (`Name "nqsb") >>= fun cert ->
+  let start con stack kv _clock keys _ =
+    X509.certificate keys (`Name "nqsb") >>= fun cert ->
     let config = Tls.Config.server ~certificates:(`Single cert) ()
     and web_data = Page.render
     in
