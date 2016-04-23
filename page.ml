@@ -76,10 +76,11 @@ let content =
       li "http://ownme.ipredator.se" "BTC Piñata" ", our bitcoin bait" ;
       li "https://tls.openmirage.org" "TLS handshake visualisation" ", our interactive visualisation" ;
       li (hannesm ^ "tlstunnel") "tlstunnel" ", an application handling TLS, forwarding the plaintext to another service via TCP" ;
+      li (mirleft ^ "tlstools") "tlstools" ", some TLS utilities" ;
+      li (github ^ "yomimono/ocaml-certify") "certify" ", an application to generate certificates, certificate signing requests, and basic CA signing" ;
       li (github ^ "mirage/mirage-seal") "mirage-seal" ", an application which produces a stand-alone unikernel serving a directory via https" ;
       li (hannesm ^ "tlsclient") "tlsclient" ", a TLS client" ;
       li (hannesm ^ "jackline") "jackline" ", a terminal XMPP client using OTR and TLS" ;
-      li (github ^ "yomimono/ocaml-certify") "certify" ", an application to generate certificates, certificate signing requests, and basic CA signing" ;
       li (hannesm ^ "trace-checker") "pcap trace checker" ", which lets you validate recorded TLS sessions"
     ]
 
@@ -90,43 +91,44 @@ let content =
     and a_amir_pinata = a ~a:[a_href "http://amirchaudhry.com/bitcoin-pinata/"] [pcdata "Amir's post"]
     and a_mirage_pinata = a ~a:[a_href (blog ^ "announcing-bitcoin-pinata")] [pcdata "MirageOS post"]
     and a_golem_pinata = a ~a:[a_href "http://www.golem.de/news/bug-bounty-hacker-sollen-mirageos-auf-schwachstellen-pruefen-1502-112289.html"] [pcdata "(german) Golem post"]
+    and emph tag v_link v_data date link descr =
+      let venue = a ~a:[a_href v_link] [pcdata ("@" ^ v_data)] in
+      li [ b [ pcdata ("(" ^ tag ^ ")") ] ; pcdata (" " ^ date ^ " ") ; venue ; pcdata ": " ; a ~a:[a_href link] [pcdata descr] ] ;
     in
     [
-      li "22 Jul 2015" (blog ^ "mirage-entropy") "Organized chaos: managing randomness" ;
-      li "07 Jul 2015" (blog ^ "mirage-seal") "Easy HTTPS Unikernels with mirage-seal" ;
-      li "29 Jun 2015" (blog ^ "bitcoin-pinata-results") "Reviewing the Bitcoin Pinata" ;
-      li "26 Jun 2015" (blog ^ "announcing-mirage-25-release") "MirageOS v2.5 with full TLS support" ;
-      li "26 Jun 2015" (blog ^ "why-ocaml-tls") "Why OCaml-TLS?" ;
-      li "04 Apr 2015" "http://monoxyd.de/20150408-ohm-008-ohne-heftige-mangel"
-        "(german) OHM #008 – Ohne Heftige Mängel: TLS und dessen Probleme; robuste Implementierung von Sicherheitsprotokollen; OCaml-TLS und MirageOS" ;
-      Html5.M.li [ pcdata "10 Feb 2015: " ; a_blog_pinata ; pcdata " (" ; a_amir_pinata ; pcdata ", " ; a_mirage_pinata ; pcdata ", " ; a_golem_pinata ; pcdata ")" ] ;
-      li "27 Dec 2014"
-        "http://media.ccc.de/browse/congress/2014/31c3_-_6443_-_en_-_saal_2_-_201412271245_-_trustworthy_secure_modular_operating_system_engineering_-_hannes_-_david_kaloper.html#video"
-        "31c3 talk: Trustworthy secure modular operating system engineering" ;
-      li "14 Jul 2014" (blog ^ "ocaml-tls-api-internals-attacks-mitigation") "Protocol implementation and mitigations to known attacks" ;
-      li "11 Jul 2014" (blog ^ "introducing-asn1") "ASN.1 and notation embedding" ;
-      li "10 Jul 2014" (blog ^ "introducing-x509") "Adventures in X.509 certificate parsing and validation" ;
-      li "09 Jul 2014" (blog ^ "introducing-nocrypto") "Building the nocrypto library core" ;
-      li "08 Jul 2014" (blog ^ "introducing-ocaml-tls") "Introducing transport layer security (TLS) in pure OCaml"
+      emph "paper" "https://www.internetsociety.org/events/ndss-symposium-2016/tron-workshop-programme" "TRON" "2016-02-21" "https://tron.nqsb.io" "Not-quite-so-broken TLS 1.3 Mechanised Conformance Checking" ;
+      emph "paper" "https://www.usenix.org/conference/usenixsecurity15" "UsenixSecurity" "2015-08-10" "https://usenix15.nqsb.io" "Not-quite-so-broken TLS: lessons in re-engineering a security protocol specification and implementation" ;
+      li "2015-07-22" (blog ^ "mirage-entropy") "Organized chaos: managing randomness" ;
+      li "2015-07-07" (blog ^ "mirage-seal") "Easy HTTPS Unikernels with mirage-seal" ;
+      li "2015-06-29" (blog ^ "bitcoin-pinata-results") "Reviewing the Bitcoin Pinata" ;
+      li "2015-06-26" (blog ^ "announcing-mirage-25-release") "MirageOS v2.5 with full TLS support" ;
+      li "2015-06-26" (blog ^ "why-ocaml-tls") "Why OCaml-TLS?" ;
+      Html5.M.li [ pcdata "2015-02-10: " ; a_blog_pinata ; pcdata " (" ; a_amir_pinata ; pcdata ", " ; a_mirage_pinata ; pcdata ", " ; a_golem_pinata ; pcdata ")" ] ;
+      emph "video" "https://events.ccc.de/congress/2014/wiki/Static:Main_Page" "31c3" "2014-12-27"  "http://media.ccc.de/browse/congress/2014/31c3_-_6443_-_en_-_saal_2_-_201412271245_-_trustworthy_secure_modular_operating_system_engineering_-_hannes_-_david_kaloper.html#video" "Trustworthy secure modular operating system engineering" ;
+      li "2014-07-14" (blog ^ "ocaml-tls-api-internals-attacks-mitigation") "Protocol implementation and mitigations to known attacks" ;
+      li "2014-07-11" (blog ^ "introducing-asn1") "ASN.1 and notation embedding" ;
+      li "2014-07-10" (blog ^ "introducing-x509") "Adventures in X.509 certificate parsing and validation" ;
+      li "2014-07-09" (blog ^ "introducing-nocrypto") "Building the nocrypto library core" ;
+      li "2014-07-08" (blog ^ "introducing-ocaml-tls") "Introducing transport layer security (TLS) in pure OCaml"
     ]
   in
 
   div ~a:[a_class ["content"]] [
-    h2 [pcdata "Not quite so broken"] ;
+    h2 [ pcdata "Not quite so broken" ] ;
     br () ;
-    p [pcdata
-         "Protocol implementations have lots of security flaws.  The immediate causes of these are often programming errors, e.g. in memory management, but the root causes are more fundamental: the challenges of interpreting the ambiguous prose specification (RFCs), the complexities inherent in large APIs and code bases, inherently unsafe programming choices, and the impossibility of directly testing conformance between implementations and the specification." ] ;
-    p [i [ pcdata "Not-quite-so-broken" ] ;
-       pcdata " is the theme of our re-engineered approach to security protocol specification and implementation that addresses these root causes.  The same code serves two roles: it is both a specification, executable as a test oracle to check conformance of traces from arbitrary implementations, and a usable implementation; a modular and declarative programming style provides clean separation between its components.  Many security flaws are thus excluded by construction."] ;
-    p [pcdata "Read more in our paper: " ;
-       a ~a:[a_href "/nqsbtls-usenix-security15.pdf"] [pcdata "Not-quite-so-broken TLS: lessons in re-engineering a security protocol specification and implementation"] ;
-       pcdata " by David Kaloper-Meršinjak, Hannes Mehnert, Anil Madhavapeddy and Peter Sewell, published at Usenix Security 2015.  We implemented some libraries in OCaml using this approach:" ] ;
+    p [ pcdata
+          "Protocol implementations have lots of security flaws.  The immediate causes of these are often programming errors, e.g. in memory management, but the root causes are more fundamental: the challenges of interpreting the ambiguous prose specification (RFCs), the complexities inherent in large APIs and code bases, inherently unsafe programming choices, and the impossibility of directly testing conformance between implementations and the specification." ] ;
+    p [ i [ pcdata "Not-quite-so-broken" ] ;
+        pcdata " is the theme of our re-engineered approach to security protocol specification and implementation that addresses these root causes.  The same code serves two roles: it is both a specification, executable as a test oracle to check conformance of traces from arbitrary implementations, and a usable implementation; a modular and declarative programming style provides clean separation between its components.  Many security flaws are thus excluded by construction."] ;
+    p [ pcdata "Read more in our paper: " ;
+        a ~a:[a_href "https://usenix15.nqsb.io"] [pcdata "Not-quite-so-broken TLS: lessons in re-engineering a security protocol specification and implementation"] ;
+        pcdata " by David Kaloper-Meršinjak, Hannes Mehnert, Anil Madhavapeddy and Peter Sewell, published at Usenix Security 2015.  We implemented some libraries in OCaml using this approach:" ] ;
     ul libs ;
     br () ;
-    p [ pcdata "Some artifacts which use our libraries:" ] ;
+    p [ pcdata "Code using nqsb:" ] ;
     ul artifacts ;
     br () ;
-    p [ pcdata "Media about nqsb:" ] ;
+    p [ pcdata "Texts about nqsb:" ] ;
     ul blog_entries ;
     p [ pcdata "Thanks to " ; a ~a:[a_href "https://www.ipredator.se"] [pcdata "IPredator"] ; pcdata " for hosting." ]
   ]

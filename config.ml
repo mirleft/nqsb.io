@@ -15,8 +15,8 @@ let net =
 let kv = crunch "disk"
 
 let () =
-  let packages = ["tls"; "tcpip"; "tyxml"; "astring"]
-  and libraries = ["tls.mirage"; "tyxml"; "astring"]
+  let packages = ["tls"; "tcpip"; "tyxml"]
+  and libraries = ["tls.mirage"; "tyxml"]
   in
   register "nqsb.io" [
     foreign
