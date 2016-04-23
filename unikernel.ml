@@ -49,6 +49,7 @@ struct
     read_kv kv name >|= fun data ->
     [ header "application/pdf" ; data ]
 
+
   let tls_accept ~tag ~f c cfg tcp =
     let peer = TCP.get_dest tcp in
     let log  = log c tag peer in
@@ -63,9 +64,9 @@ struct
       ~status:"HTTP/1.1 301 Moved permanently"
       [ ("location", "https://nqsb.io") ]
 
-  let h_notice c =
+  let h_notice ~tag c =
     fun tcp ->
-      let log = log c "web" (TCP.get_dest tcp) in
+      let log = log c tag (TCP.get_dest tcp) in
       TCP.write tcp moved_permanently >>= function
       | `Error _ -> log "write error" ; TCP.close tcp
       | _        -> log "responded"   ; TCP.close tcp
@@ -92,7 +93,7 @@ struct
     read_cert keys "tron" >>= fun c_tron ->
     let config = Tls.Config.server ~certificates:(`Multiple_default (c_nqsb, [ c_usenix ; c_tron])) () in
 
-    S.listen_tcpv4 stack ~port:80 (h_notice con) ;
-    S.listen_tcpv4 stack ~port:443 (tls_accept ~tag:"web-server" ~f con config) ;
+    S.listen_tcpv4 stack ~port:80 (h_notice ~tag:"HTTP" con) ;
+    S.listen_tcpv4 stack ~port:443 (tls_accept ~tag:"HTTPS" ~f con config) ;
     S.listen stack
 end
