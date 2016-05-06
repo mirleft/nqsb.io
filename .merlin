@@ -5,6 +5,5 @@ PKG lwt
 PKG tls
 PKG tls.mirage
 PKG tyxml
-PKG astring
 PKG tcpip
 PKG mirage

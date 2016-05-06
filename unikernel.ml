@@ -34,8 +34,9 @@ struct
   let header content_type =
     http_header
       ~status:"HTTP/1.1 200 OK"
-      [ ("content-type", content_type) ;
-        ("Strict-Transport-Security", "max-age=31536000; includeSubDomains") ]
+      [ ("Content-Type", content_type) ;
+        ("Strict-Transport-Security", "max-age=31536000; includeSubDomains") ;
+        ("Connection", "close") ]
 
   let read_kv kv name =
     KV.size kv name >>= function

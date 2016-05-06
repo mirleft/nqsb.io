@@ -135,7 +135,6 @@ let content =
 
 let render =
   Cstruct.of_string @@ StringHtml.print @@
-  let title = "not quite so broken" in
   html
-    (header title)
+    (header "not quite so broken")
     (body [ content ])
