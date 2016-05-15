@@ -118,6 +118,9 @@ let content =
     br () ;
     p [ pcdata "Texts about nqsb:" ] ;
     ul blog_entries ;
+    p [ pcdata "Parts of this work were supported by " ;
+        a ~a:[a_href "http://www.cl.cam.ac.uk/~pes20/rems"] [pcdata "REMS: Rigorous Engineering for Mainstream Systems"] ;
+        pcdata " EPSRC Programme Grant EP/K008528/1, and by the European Union’s Seventh Framework Programme FP7/2007–2013 under the User Centric Networking project (no. 611001)." ] ;
     p [ pcdata "Thanks to " ; a ~a:[a_href "https://www.ipredator.se"] [pcdata "IPredator"] ; pcdata " for hosting." ]
   ]
 
