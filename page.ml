@@ -1,8 +1,8 @@
-open Html5.M
+open Tyxml.Html
 
-let header title =
+let header t =
   head
-    (Html5.M.title (pcdata title))
+    (title (pcdata t))
     ([meta ~a:[a_charset "UTF-8"] ();
       style [ pcdata
     {___|body {
@@ -84,6 +84,7 @@ let content =
       li [ b [ pcdata ("(" ^ tag ^ ")") ] ; pcdata (" " ^ date ^ " ") ; venue ; pcdata ": " ; a ~a:[a_href link] [pcdata descr] ] ;
     in
     [
+      Tyxml.Html.li [ a ~a:[a_href "https://hannes.nqsb.io"] [pcdata "hannes blog: full stack engineer"] ] ;
       emph "paper" "https://www.internetsociety.org/events/ndss-symposium-2016/tron-workshop-programme" "TRON" "2016-02-21" "https://tron.nqsb.io" "Not-quite-so-broken TLS 1.3 Mechanised Conformance Checking" ;
       emph "paper" "https://www.usenix.org/conference/usenixsecurity15" "UsenixSecurity" "2015-08-10" "https://usenix15.nqsb.io" "Not-quite-so-broken TLS: lessons in re-engineering a security protocol specification and implementation" ;
       li "2015-07-22" (blog ^ "mirage-entropy") "Organized chaos: managing randomness" ;
@@ -91,7 +92,7 @@ let content =
       li "2015-06-29" (blog ^ "bitcoin-pinata-results") "Reviewing the Bitcoin Pinata" ;
       li "2015-06-26" (blog ^ "announcing-mirage-25-release") "MirageOS v2.5 with full TLS support" ;
       li "2015-06-26" (blog ^ "why-ocaml-tls") "Why OCaml-TLS?" ;
-      Html5.M.li [ pcdata "2015-02-10: " ; a_blog_pinata ; pcdata " (" ; a_amir_pinata ; pcdata ", " ; a_mirage_pinata ; pcdata ", " ; a_golem_pinata ; pcdata ")" ] ;
+      Tyxml.Html.li [ pcdata "2015-02-10: " ; a_blog_pinata ; pcdata " (" ; a_amir_pinata ; pcdata ", " ; a_mirage_pinata ; pcdata ", " ; a_golem_pinata ; pcdata ")" ] ;
       emph "video" "https://events.ccc.de/congress/2014/wiki/Static:Main_Page" "31c3" "2014-12-27"  "http://media.ccc.de/browse/congress/2014/31c3_-_6443_-_en_-_saal_2_-_201412271245_-_trustworthy_secure_modular_operating_system_engineering_-_hannes_-_david_kaloper.html#video" "Trustworthy secure modular operating system engineering" ;
       li "2014-07-14" (blog ^ "ocaml-tls-api-internals-attacks-mitigation") "Protocol implementation and mitigations to known attacks" ;
       li "2014-07-11" (blog ^ "introducing-asn1") "ASN.1 and notation embedding" ;
@@ -126,7 +127,8 @@ let content =
 
 let render =
   let buf = Buffer.create 500 in
-  Html5.P.print ~output:(Buffer.add_string buf) @@
+  let fmt = Format.formatter_of_buffer buf in
+  pp () fmt @@
   html
     (header "not quite so broken")
     (body [ content ]) ;
