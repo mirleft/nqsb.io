@@ -63,6 +63,7 @@ let content =
       li "https://mirage.io" "MirageOS" ", a library operating system" ;
       li "http://ownme.ipredator.se" "BTC Piñata" ", our bitcoin bait" ;
       li "https://tls.openmirage.org" "TLS handshake visualisation" ", our interactive visualisation" ;
+      li (mirleft ^ "libnqsb-tls") "libnqsb-tls" ", bindings to C which implement the libtls interface (drop-in replacement for libtls.so)" ;
       li (hannesm ^ "tlstunnel") "tlstunnel" ", an application handling TLS, forwarding the plaintext to another service via TCP" ;
       li (mirleft ^ "tlstools") "tlstools" ", some TLS utilities" ;
       li (github ^ "yomimono/ocaml-certify") "certify" ", an application to generate certificates, certificate signing requests, and basic CA signing" ;
@@ -85,6 +86,7 @@ let content =
     in
     [
       Tyxml.Html.li [ a ~a:[a_href "https://hannes.nqsb.io"] [pcdata "hannes blog: full stack engineer"] ] ;
+      emph "paper" "https://ocaml.org/meetings/ocaml/2016/" "OCaml2016" "2016-09-23" "https://www.cl.cam.ac.uk/%7Ejdy22/papers/ocaml-inside-a-drop-in-replacement-for-libtls.pdf" "OCaml inside: a drop-in replacement for libtls" ;
       emph "paper" "https://www.internetsociety.org/events/ndss-symposium-2016/tron-workshop-programme" "TRON" "2016-02-21" "https://tron.nqsb.io" "Not-quite-so-broken TLS 1.3 Mechanised Conformance Checking" ;
       emph "paper" "https://www.usenix.org/conference/usenixsecurity15" "UsenixSecurity" "2015-08-10" "https://usenix15.nqsb.io" "Not-quite-so-broken TLS: lessons in re-engineering a security protocol specification and implementation" ;
       li "2015-07-22" (blog ^ "mirage-entropy") "Organized chaos: managing randomness" ;
