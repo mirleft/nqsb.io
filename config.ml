@@ -11,17 +11,21 @@ let net =
     (socket_stackv4 [Ipaddr.V4.any])
     (static_ipv4_stack ~config:address default_network)
 
-
 let () =
-  let packages = [package ~sublibs:["mirage"] "tls"; package "tyxml"]
-  in
+  let packages = [
+    package ~sublibs:["mirage"] "tls";
+    package "tyxml";
+    package ~sublibs:["mirage"] "logs-syslog";
+    package ~sublibs:["lwt"] "logs"
+  ] in
   register "nqsb.io" [
     foreign
       ~deps:[abstract nocrypto]
       ~packages
       "Unikernel.Main"
-      ( console @-> stackv4 @-> kv_ro @-> kv_ro @-> job )
+      (console @-> pclock @-> stackv4 @-> kv_ro @-> kv_ro @-> job)
     $ default_console
+    $ default_posix_clock
     $ net
     $ crunch "tls"
     $ crunch "disk"

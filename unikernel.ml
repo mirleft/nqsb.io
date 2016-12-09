@@ -1,10 +1,11 @@
 open Lwt.Infix
 open V1_LWT
 
-module Main (C : CONSOLE) (S : STACKV4) (KEYS : KV_RO) (KV : KV_RO) =
+module Main (C : CONSOLE) (CLOCK: V1.PCLOCK) (S : STACKV4) (KEYS : KV_RO) (KV : KV_RO) =
 struct
   module TCP   = S.TCPV4
   module TLS   = Tls_mirage.Make (TCP)
+  module UDPLOG = Logs_syslog_mirage.Udp(C)(CLOCK)(S.UDPV4)
 
   let read_key kv name =
     KEYS.size kv name >>= function
@@ -22,8 +23,8 @@ struct
      match Private_key.of_pem_cstruct1 key with
      | `RSA key -> key)
 
-  let log c tag (ip, port) msg =
-    C.log c (Printf.sprintf "[%s] %s:%d %s" tag (Ipaddr.V4.to_string ip) port msg)
+  let log tag (ip, port) msg =
+    Logs_lwt.info (fun m -> m "[%s] %s:%d %s" tag (Ipaddr.V4.to_string ip) port msg)
 
   let http_header ~status xs =
     let headers = List.map (fun (k, v) -> k ^ ": " ^ v) xs in
@@ -49,10 +50,9 @@ struct
     read_kv kv name >|= fun data ->
     [ header "application/pdf" ; data ]
 
-
-  let tls_accept ~tag ~f c cfg tcp =
+  let tls_accept ~tag ~f cfg tcp =
     let peer = TCP.dst tcp in
-    let log  = log c tag peer in
+    let log  = log tag peer in
     let with_tls_server k = TLS.server_of_flow cfg tcp >>= k
     in
     with_tls_server @@ function
@@ -66,9 +66,9 @@ struct
       ~status:"HTTP/1.1 301 Moved permanently"
       [ ("location", "https://nqsb.io") ]
 
-  let h_notice ~tag c =
+  let h_notice ~tag =
     fun tcp ->
-      let log = log c tag (TCP.dst tcp) in
+      let log = log tag (TCP.dst tcp) in
       TCP.write tcp moved_permanently >>= function
       | Error `Closed -> log "write error, closed"
       | Error (`Msg str) -> log ("write error" ^ str)
@@ -76,16 +76,16 @@ struct
 
   let dispatch nqsb usenix tron log tls =
     match TLS.epoch tls with
-    | Error _ -> log "error while getting epoch" >|= fun () -> nqsb
+    | Error _ -> log "error while getting epoch, serving nqsb.io" >|= fun () -> nqsb
     | Ok e ->
       match e.Tls.Core.own_name with
-      | Some "usenix15.nqsb.io" -> log "serving usenix" >|= fun () -> usenix
-      | Some "tron.nqsb.io" ->  log "serving tron" >|= fun () -> tron
+      | Some "usenix15.nqsb.io" -> log "serving usenix pdf" >|= fun () -> usenix
+      | Some "tron.nqsb.io" ->  log "serving tron pdf" >|= fun () -> tron
       | Some "nqsb.io" ->  log "serving nqsb.io" >|= fun () -> nqsb
-      | Some x -> log ("SNI is " ^ x)  >|= fun () -> nqsb
-      | None -> log "no sni" >|= fun () -> nqsb
+      | Some x -> log ("SNI is " ^ x ^ ", servion nqsb.io")  >|= fun () -> nqsb
+      | None -> log "no sni, serving nqsb.io" >|= fun () -> nqsb
 
-  let start con stack keys kv _ =
+  let start con clock stack keys kv _ =
     let d_nqsb = [ header "text/html;charset=utf-8" ; Page.render ] in
     read_pdf kv "nqsbtls-usenix-security15.pdf" >>= fun d_usenix ->
     read_pdf kv "tron.pdf" >>= fun d_tron ->
@@ -96,7 +96,13 @@ struct
     read_cert keys "tron" >>= fun c_tron ->
     let config = Tls.Config.server ~certificates:(`Multiple_default (c_nqsb, [ c_usenix ; c_tron])) () in
 
-    S.listen_tcpv4 stack ~port:80 (h_notice ~tag:"HTTP" con) ;
-    S.listen_tcpv4 stack ~port:443 (tls_accept ~tag:"HTTPS" ~f con config) ;
+    let reporter =
+      let ip = Ipaddr.V4.of_string_exn "198.167.222.206" in
+      UDPLOG.create con clock (S.udpv4 stack) ~hostname:"web.nqsb.io" ip ()
+    in
+    Logs.set_reporter reporter ;
+
+    S.listen_tcpv4 stack ~port:80 (h_notice ~tag:"HTTP") ;
+    S.listen_tcpv4 stack ~port:443 (tls_accept ~tag:"HTTPS" ~f config) ;
     S.listen stack
 end
