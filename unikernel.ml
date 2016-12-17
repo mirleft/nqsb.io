@@ -9,11 +9,11 @@ struct
 
   let read_key kv name =
     KEYS.size kv name >>= function
-    | `Error _ -> Lwt.fail (invalid_arg "error")
-    | `Ok size ->
-      KEYS.read kv name 0 (Int64.to_int size) >>= function
-      | `Error _ -> Lwt.fail (invalid_arg "error")
-      | `Ok cs -> Lwt.return (Cstruct.concat cs)
+    | Error _ -> Lwt.fail (invalid_arg "error")
+    | Ok size ->
+      KEYS.read kv name 0L size >>= function
+      | Error _ -> Lwt.fail (invalid_arg "error")
+      | Ok cs -> Lwt.return (Cstruct.concat cs)
 
   let read_cert kv name =
     read_key kv (name ^ ".pem") >>= fun chain ->
@@ -40,11 +40,11 @@ struct
 
   let read_kv kv name =
     KV.size kv name >>= function
-    | `Error e -> Lwt.fail (invalid_arg "failed")
-    | `Ok size ->
-      KV.read kv name 0 (Int64.to_int size) >>= function
-      | `Error e -> Lwt.fail (invalid_arg "failed")
-      | `Ok bufs -> Lwt.return (Cstruct.concat bufs)
+    | Error e -> Lwt.fail (invalid_arg "failed")
+    | Ok size ->
+      KV.read kv name 0L size >>= function
+      | Error e -> Lwt.fail (invalid_arg "failed")
+      | Ok bufs -> Lwt.return (Cstruct.concat bufs)
 
   let read_pdf kv name =
     read_kv kv name >|= fun data ->
