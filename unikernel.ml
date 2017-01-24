@@ -1,5 +1,5 @@
 open Lwt.Infix
-open V1_LWT
+open Mirage_types_lwt
 
 module Main (S : STACKV4) (KEYS : KV_RO) (KV : KV_RO) =
 struct
@@ -8,10 +8,14 @@ struct
 
   let read_key kv name =
     KEYS.size kv name >>= function
-    | Error _ -> Lwt.fail (invalid_arg "error")
+    | Error e ->
+      Logs_lwt.warn (fun m -> m "keys: error while calling size %s: %a" name KEYS.pp_error e) >>= fun () ->
+      Lwt.fail (invalid_arg "error")
     | Ok size ->
       KEYS.read kv name 0L size >>= function
-      | Error _ -> Lwt.fail (invalid_arg "error")
+      | Error e ->
+        Logs_lwt.warn (fun m -> m "keys: error while calling read %s: %a" name KEYS.pp_error e) >>= fun () ->
+        Lwt.fail (invalid_arg "error")
       | Ok cs -> Lwt.return (Cstruct.concat cs)
 
   let read_cert kv name =
@@ -39,10 +43,14 @@ struct
 
   let read_kv kv name =
     KV.size kv name >>= function
-    | Error e -> Lwt.fail (invalid_arg "failed")
+    | Error e ->
+      Logs_lwt.warn (fun m -> m "kv: error while calling size %s: %a" name KV.pp_error e) >>= fun () ->
+      Lwt.fail (invalid_arg "failed")
     | Ok size ->
       KV.read kv name 0L size >>= function
-      | Error e -> Lwt.fail (invalid_arg "failed")
+      | Error e ->
+        Logs_lwt.warn (fun m -> m "kv: error while calling read %s: %a" name KV.pp_error e) >>= fun () ->
+        Lwt.fail (invalid_arg "failed")
       | Ok bufs -> Lwt.return (Cstruct.concat bufs)
 
   let read_pdf kv name =
@@ -88,7 +96,7 @@ struct
       | Some "usenix15.nqsb.io" -> log "serving usenix pdf" >|= fun () -> usenix
       | Some "tron.nqsb.io" ->  log "serving tron pdf" >|= fun () -> tron
       | Some "nqsb.io" ->  log "serving nqsb.io" >|= fun () -> nqsb
-      | Some x -> log ("SNI is " ^ x ^ ", servion nqsb.io")  >|= fun () -> nqsb
+      | Some x -> log ("SNI is " ^ x ^ ", serving nqsb.io")  >|= fun () -> nqsb
       | None -> log "no sni, serving nqsb.io" >|= fun () -> nqsb
 
   let start stack keys kv _ _ =
