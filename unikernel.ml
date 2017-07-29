@@ -9,12 +9,12 @@ struct
   let read_key kv name =
     KEYS.size kv name >>= function
     | Error e ->
-      Logs_lwt.warn (fun m -> m "keys: error while calling size %s: %a" name KEYS.pp_error e) >>= fun () ->
+      Logs.warn (fun m -> m "keys: error while calling size %s: %a" name KEYS.pp_error e);
       Lwt.fail (invalid_arg "error")
     | Ok size ->
       KEYS.read kv name 0L size >>= function
       | Error e ->
-        Logs_lwt.warn (fun m -> m "keys: error while calling read %s: %a" name KEYS.pp_error e) >>= fun () ->
+        Logs.warn (fun m -> m "keys: error while calling read %s: %a" name KEYS.pp_error e);
         Lwt.fail (invalid_arg "error")
       | Ok cs -> Lwt.return (Cstruct.concat cs)
 
@@ -25,9 +25,6 @@ struct
     (Certificate.of_pem_cstruct chain,
      match Private_key.of_pem_cstruct1 key with
      | `RSA key -> key)
-
-  let log tag (ip, port) msg =
-    Logs_lwt.info (fun m -> m "[%s] %s:%d %s" tag (Ipaddr.V4.to_string ip) port msg)
 
   let http_header ~status xs =
     let headers = List.map (fun (k, v) -> k ^ ": " ^ v) xs in
@@ -44,12 +41,12 @@ struct
   let read_kv kv name =
     KV.size kv name >>= function
     | Error e ->
-      Logs_lwt.warn (fun m -> m "kv: error while calling size %s: %a" name KV.pp_error e) >>= fun () ->
+      Logs.warn (fun m -> m "kv: error while calling size %s: %a" name KV.pp_error e);
       Lwt.fail (invalid_arg "failed")
     | Ok size ->
       KV.read kv name 0L size >>= function
       | Error e ->
-        Logs_lwt.warn (fun m -> m "kv: error while calling read %s: %a" name KV.pp_error e) >>= fun () ->
+        Logs.warn (fun m -> m "kv: error while calling read %s: %a" name KV.pp_error e);
         Lwt.fail (invalid_arg "failed")
       | Ok bufs -> Lwt.return (Cstruct.concat bufs)
 
@@ -57,47 +54,82 @@ struct
     read_kv kv name >|= fun data ->
     [ header "application/pdf" ; data ]
 
-  let tls_accept ~tag ~f cfg tcp =
-    let ip, port = TCP.dst tcp in
-    let with_tls_server k = TLS.server_of_flow cfg tcp >>= k
-    in
-    with_tls_server @@ function
-    | Error e ->
-      Logs_lwt.warn (fun m -> m "[%s] %s:%d error %a"
-                        tag (Ipaddr.V4.to_string ip) port
-                        TLS.pp_write_error e) >>= fun () ->
-      TCP.close tcp
-    | Ok tls ->
-      let log = log tag (ip, port) in
-      f log tls >>= fun data ->
-      TLS.writev tls data >>= fun _ ->
-      TLS.close tls
+  let stored_tags = Lwt.new_key ()
 
-  let moved_permanently = http_header
-      ~status:"HTTP/1.1 301 Moved permanently"
+  let add_tag ntag nval =
+    let other = match Lwt.get stored_tags with
+      | None -> Logs.Tag.empty
+      | Some x -> x
+    in
+    Logs.Tag.add ntag nval other
+
+  let with_tag ntag nval f =
+    Lwt.with_value stored_tags (Some (add_tag ntag nval)) f
+
+  let peer_tag : (Ipaddr.V4.t * int) Logs.Tag.def =
+    Logs.Tag.def "peer" ~doc:"connection endpoint"
+      Fmt.(pair ~sep:(unit ":") Ipaddr.V4.pp_hum int)
+
+  let tls_tag : Tls.Core.epoch_data Logs.Tag.def =
+    Logs.Tag.def "tls" ~doc:"TLS parameters"
+      (fun ppf epoch ->
+         let open Tls.Core in
+         let open Sexplib.Sexp in
+         Fmt.pf ppf "%a,%a,%a,extended_ms=%a"
+           pp (sexp_of_tls_version epoch.protocol_version)
+           pp (Tls.Ciphersuite.sexp_of_ciphersuite epoch.ciphersuite)
+           Fmt.(option ~none:(unit "no SNI") string) epoch.own_name
+           Fmt.bool epoch.extended_ms)
+
+  let tls_accept ~f cfg tcp =
+    with_tag peer_tag (TCP.dst tcp)
+      (fun () ->
+         TLS.server_of_flow cfg tcp >>= function
+         | Error e ->
+           Logs.warn (fun m -> m ?tags:(Lwt.get stored_tags) "TLS error %a"
+                         TLS.pp_write_error e);
+           TCP.close tcp
+         | Ok tls ->
+           let data = f tls in
+           TLS.writev tls data >>= fun _ ->
+           TLS.close tls)
+
+  let moved_permanently =
+    http_header ~status:"HTTP/1.1 301 Moved permanently"
       [ ("location", "https://nqsb.io") ]
 
-  let h_notice ~tag tcp =
-    let ip, port = TCP.dst tcp in
-    TCP.write tcp moved_permanently >>= function
-    | Error e ->
-      Logs_lwt.warn (fun m -> m "[%s] %s:%d error %a"
-                        tag (Ipaddr.V4.to_string ip) port
-                        TCP.pp_write_error e) >>= fun () ->
-      TCP.close tcp
-    | Ok () ->
-      log tag (ip, port) "TCP responded" >>= fun () -> TCP.close tcp
+  let h_notice tcp =
+    let tags = add_tag peer_tag (TCP.dst tcp) in
+    TCP.write tcp moved_permanently >>= fun r ->
+    (match r with
+     | Error e -> Logs.warn (fun m -> m ~tags "TCP error %a" TCP.pp_write_error e)
+     | Ok () -> Logs.info (fun m -> m ~tags "HTTP responded")) ;
+    TCP.close tcp
 
-  let dispatch nqsb usenix tron log tls =
+  let dispatch nqsb usenix tron tls =
     match TLS.epoch tls with
-    | Error () -> log "error while getting epoch, serving nqsb.io" >|= fun () -> nqsb
+    | Error () ->
+      Logs.warn (fun m -> m ?tags:(Lwt.get stored_tags)
+                    "error while retrieving epoch, serving nqsb.io") ;
+      nqsb
     | Ok e ->
+      let tags = add_tag tls_tag e in
       match e.Tls.Core.own_name with
-      | Some "usenix15.nqsb.io" -> log "serving usenix pdf" >|= fun () -> usenix
-      | Some "tron.nqsb.io" ->  log "serving tron pdf" >|= fun () -> tron
-      | Some "nqsb.io" ->  log "serving nqsb.io" >|= fun () -> nqsb
-      | Some x -> log ("SNI is " ^ x ^ ", serving nqsb.io")  >|= fun () -> nqsb
-      | None -> log "no sni, serving nqsb.io" >|= fun () -> nqsb
+      | Some "usenix15.nqsb.io" ->
+        Logs.info (fun m -> m ~tags "serving usenix pdf") ;
+        usenix
+      | Some "tron.nqsb.io" ->
+        Logs.info (fun m -> m ~tags "serving tron pdf") ;
+        tron
+      | Some "nqsb.io" ->
+        Logs.info (fun m -> m ~tags "serving nqsb.io") ;
+        nqsb
+      | Some x ->
+        Logs.info (fun m -> m ~tags "unknown SNI (%s), serving nqsb.io" x) ;
+        nqsb
+      | None ->
+        Logs.info (fun m -> m ~tags "no sni, serving nqsb.io") ;
+        nqsb
 
   let start stack keys kv _ _ =
     let d_nqsb = [ header "text/html;charset=utf-8" ; Page.render ] in
@@ -110,7 +142,7 @@ struct
     read_cert keys "tron" >>= fun c_tron ->
     let config = Tls.Config.server ~certificates:(`Multiple_default (c_nqsb, [ c_usenix ; c_tron])) () in
 
-    S.listen_tcpv4 stack ~port:80 (h_notice ~tag:"HTTP") ;
-    S.listen_tcpv4 stack ~port:443 (tls_accept ~tag:"HTTPS" ~f config) ;
+    S.listen_tcpv4 stack ~port:80 h_notice ;
+    S.listen_tcpv4 stack ~port:443 (tls_accept ~f config) ;
     S.listen stack
 end

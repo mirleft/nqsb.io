@@ -20,7 +20,7 @@ let () =
   let packages = [
     package ~sublibs:["mirage"] "tls";
     package "tyxml";
-    package ~sublibs:["lwt"] "logs"
+    package "logs"
   ] in
   register "nqsb.io" [
     foreign
