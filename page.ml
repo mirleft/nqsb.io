@@ -10,7 +10,7 @@ let header t =
            color: #333;
          }
          .content {
-           margin: 10% 0 10% 15%;
+           margin: 3% 0 10% 15%;
            width: 45%;
          }
          a, a:visited {
@@ -30,27 +30,30 @@ let content =
   let libs =
     let tls =
       let a_tls = a ~a:[a_href (mirleft ^ "ocaml-tls")] [pcdata "TLS"]
-      and a_tls_doc = a ~a:[a_href (doc ^ "tls")] [pcdata "API documentation"]
+      and a_tls_doc = a ~a:[a_href (doc ^ "tls/doc")] [pcdata "API documentation"]
       in
       [ a_tls ; pcdata " (" ; a_tls_doc ; pcdata ")" ; pcdata ", the most widely used security protocol on the Internet (" ]
     and x509 =
       let a_x509 = a ~a:[a_href (mirleft ^ "ocaml-x509")] [pcdata "X.509"]
-      and a_x509_doc = a ~a:[a_href (doc ^ "x509")] [pcdata "API documentation"]
+      and a_x509_doc = a ~a:[a_href (doc ^ "x509/doc")] [pcdata "API documentation"]
       in
       [ a_x509 ; pcdata " (" ; a_x509_doc ; pcdata ")" ;
         pcdata "certificate handling (including public and private RSA keys (PKCS8), certificate signing requests (PKCS10))" ]
     and asn1 =
-      let a_asn1 = a ~a:[a_href (mirleft ^ "ocaml-asn1-combinators")] [pcdata "ASN.1"] in
-      [ a_asn1 ; pcdata " parser and unparser combinators" ]
+      let a_asn1 = a ~a:[a_href (mirleft ^ "ocaml-asn1-combinators")] [pcdata "ASN.1"]
+      and a_asn1_doc = a ~a:[a_href (doc ^ "asn1-combinators/doc")] [pcdata "API documentation"]
+      in
+      [ a_asn1 ; pcdata " (" ; a_asn1_doc ; pcdata ")" ;
+        pcdata " parser and unparser combinators" ]
     and nocrypto =
       let a_nocrypto = a ~a:[a_href (mirleft ^ "ocaml-nocrypto")] [pcdata "nocrypto"]
-      and a_nc_doc = a ~a:[a_href (doc ^ "nocrypto")] [pcdata "API documentation"]
+      and a_nc_doc = a ~a:[a_href (doc ^ "nocrypto/doc")] [pcdata "API documentation"]
       in
       [ a_nocrypto ; pcdata " (" ; a_nc_doc ; pcdata ")" ;
         pcdata " underlying cryptographic primitives (symmetric: 3DES, AES; hash: MD5, SHA 1, SHA 2; asymmetric: DH, DSA, RSA; CSPRNG: Fortuna; ECB/CBC/CCM/GCM modes)" ]
     and otr =
       let a_otr = a ~a:[a_href (hannesm ^ "ocaml-otr")] [pcdata "OTR"]
-      and a_otr_doc = a ~a:[a_href  "https://hannesm.github.io/ocaml-otr"] [pcdata "API documentation"]
+      and a_otr_doc = a ~a:[a_href  "https://hannesm.github.io/ocaml-otr/doc"] [pcdata "API documentation"]
       in
       [ a_otr ; pcdata " (" ; a_otr_doc ; pcdata ")" ; pcdata ", the Off-the-record protocol" ]
     in
