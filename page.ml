@@ -50,7 +50,7 @@ let content =
       and a_nc_doc = a ~a:[a_href (doc ^ "nocrypto/doc")] [pcdata "API documentation"]
       in
       [ a_nocrypto ; pcdata " (" ; a_nc_doc ; pcdata ")" ;
-        pcdata " underlying cryptographic primitives (symmetric: 3DES, AES; hash: MD5, SHA 1, SHA 2; asymmetric: DH, DSA, RSA; CSPRNG: Fortuna; ECB/CBC/CCM/GCM modes)" ]
+        pcdata " underlying cryptographic primitives (symmetric: ARC4, 3DES, AES (ECB/CBC/CCM/CTR/GCM); hash: MD5, SHA1, SHA2; asymmetric: DH, DSA, RSA; CSPRNG: Fortuna)" ]
     and otr =
       let a_otr = a ~a:[a_href (hannesm ^ "ocaml-otr")] [pcdata "OTR"]
       and a_otr_doc = a ~a:[a_href  "https://hannesm.github.io/ocaml-otr/doc"] [pcdata "API documentation"]
@@ -65,7 +65,7 @@ let content =
     in [
       li "https://mirage.io" "MirageOS" ", a library operating system" ;
       li "http://ownme.ipredator.se" "BTC Piñata" ", our bitcoin bait" ;
-      li "https://tls.openmirage.org" "TLS handshake visualisation" ", our interactive visualisation" ;
+      li "https://tls.nqsb.io" "TLS handshake visualisation" ", our interactive visualisation" ;
       li (mirleft ^ "libnqsb-tls") "libnqsb-tls" ", bindings to C which implement the libtls interface (drop-in replacement for libtls.so)" ;
       li (hannesm ^ "tlstunnel") "tlstunnel" ", an application handling TLS, forwarding the plaintext to another service via TCP" ;
       li (mirleft ^ "tlstools") "tlstools" ", some TLS utilities" ;
@@ -85,7 +85,7 @@ let content =
     and a_golem_pinata = a ~a:[a_href "http://www.golem.de/news/bug-bounty-hacker-sollen-mirageos-auf-schwachstellen-pruefen-1502-112289.html"] [pcdata "(german) Golem post"]
     and emph tag v_link v_data date link descr =
       let venue = a ~a:[a_href v_link] [pcdata ("@" ^ v_data)] in
-      li [ b [ pcdata ("(" ^ tag ^ ")") ] ; pcdata (" " ^ date ^ " ") ; venue ; pcdata ": " ; a ~a:[a_href link] [pcdata descr] ] ;
+      li [ a ~a:[a_href link] [pcdata ("(" ^ tag ^ ")") ] ; pcdata (" " ^ date ^ " ") ; venue ; pcdata ": " ; a ~a:[a_href link] [pcdata descr] ] ;
     in
     [
       Tyxml.Html.li [ a ~a:[a_href "https://hannes.nqsb.io"] [pcdata "hannes blog: full stack engineer"] ] ;

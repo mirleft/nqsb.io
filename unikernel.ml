@@ -31,10 +31,11 @@ struct
     let lines = status :: headers @ [ "\r\n" ] in
     Cstruct.of_string (String.concat "\r\n" lines)
 
-  let header content_type =
+  let header content_type len =
     http_header
       ~status:"HTTP/1.1 200 OK"
       [ ("Content-Type", content_type) ;
+        ("Content-length", string_of_int len) ;
         ("Strict-Transport-Security", "max-age=31536000; includeSubDomains") ;
         ("Connection", "close") ]
 
@@ -52,7 +53,7 @@ struct
 
   let read_pdf kv name =
     read_kv kv name >|= fun data ->
-    [ header "application/pdf" ; data ]
+    [ header "application/pdf" (Cstruct.len data) ; data ]
 
   let stored_tags = Lwt.new_key ()
 
@@ -132,7 +133,10 @@ struct
         nqsb
 
   let start stack keys kv _ _ =
-    let d_nqsb = [ header "text/html;charset=utf-8" ; Page.render ] in
+    let d_nqsb =
+      let page = Page.render in
+      [ header "text/html;charset=utf-8" (Cstruct.len page) ; page ]
+    in
     read_pdf kv "nqsbtls-usenix-security15.pdf" >>= fun d_usenix ->
     read_pdf kv "tron.pdf" >>= fun d_tron ->
     let f = dispatch d_nqsb d_usenix d_tron in
