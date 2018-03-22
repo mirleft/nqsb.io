@@ -132,7 +132,12 @@ struct
         Logs.info (fun m -> m ~tags "no sni, serving nqsb.io") ;
         nqsb
 
-  let start stack keys kv _ _ =
+  let start stack keys kv _ _ info =
+    Logs.info (fun m -> m "used packages: %a"
+                  Fmt.(Dump.list @@ pair ~sep:(unit ".") string string)
+                  info.Mirage_info.packages) ;
+    Logs.info (fun m -> m "used libraries: %a"
+                  Fmt.(Dump.list string) info.Mirage_info.libraries) ;
     let d_nqsb =
       let page = Page.render in
       [ header "text/html;charset=utf-8" (Cstruct.len page) ; page ]

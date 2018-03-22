@@ -15,7 +15,7 @@ let () =
   ] in
   register "nqsb.io" [
     foreign
-      ~deps:[abstract nocrypto; abstract logger]
+      ~deps:[ abstract nocrypto ; abstract logger ; abstract app_info ]
       ~packages
       "Unikernel.Main"
       (stackv4 @-> kv_ro @-> kv_ro @-> job)
