@@ -80,7 +80,7 @@ let content =
     let li date link descr =
       li [ pcdata (date ^ ": ") ; a ~a:[a_href link] [pcdata descr] ] ;
     and a_blog_pinata = a ~a:[a_href (blog ^ "announcing-bitcoin-pinata")] [pcdata "Smash the Bitcoin Pinata for fun and profit!"]
-    and a_amir_pinata = a ~a:[a_href "http://amirchaudhry.com/bitcoin-pinata/"] [pcdata "Amir's post"]
+    and a_amir_pinata = a ~a:[a_href "http://amirchaudhry.com/bitcoin-pinata"] [pcdata "Amir's post"]
     and a_mirage_pinata = a ~a:[a_href (blog ^ "announcing-bitcoin-pinata")] [pcdata "MirageOS post"]
     and a_golem_pinata = a ~a:[a_href "http://www.golem.de/news/bug-bounty-hacker-sollen-mirageos-auf-schwachstellen-pruefen-1502-112289.html"] [pcdata "(german) Golem post"]
     and emph tag v_link v_data date link descr =
