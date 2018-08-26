@@ -1,30 +1,10 @@
 open Lwt.Infix
 open Mirage_types_lwt
 
-module Main (S : STACKV4) (KEYS : KV_RO) (KV : KV_RO) =
-struct
+module Main (R : RANDOM) (P : PCLOCK) (T : TIME) (S : STACKV4) (KV : KV_RO) = struct
   module TCP   = S.TCPV4
   module TLS   = Tls_mirage.Make (TCP)
-
-  let read_key kv name =
-    KEYS.size kv name >>= function
-    | Error e ->
-      Logs.warn (fun m -> m "keys: error while calling size %s: %a" name KEYS.pp_error e);
-      Lwt.fail (invalid_arg "error")
-    | Ok size ->
-      KEYS.read kv name 0L size >>= function
-      | Error e ->
-        Logs.warn (fun m -> m "keys: error while calling read %s: %a" name KEYS.pp_error e);
-        Lwt.fail (invalid_arg "error")
-      | Ok cs -> Lwt.return (Cstruct.concat cs)
-
-  let read_cert kv name =
-    read_key kv (name ^ ".pem") >>= fun chain ->
-    read_key kv (name ^ ".key") >|= fun key ->
-    let open X509.Encoding.Pem in
-    (Certificate.of_pem_cstruct chain,
-     match Private_key.of_pem_cstruct1 key with
-     | `RSA key -> key)
+  module D = Dns_mirage_certify.Make(R)(P)(T)(S)
 
   let http_header ~status xs =
     let headers = List.map (fun (k, v) -> k ^ ": " ^ v) xs in
@@ -132,12 +112,22 @@ struct
         Logs.info (fun m -> m ~tags "no sni, serving nqsb.io") ;
         nqsb
 
-  let start stack keys kv _ _ info =
+  let start _ pclock _time stack kv _ _ info =
     Logs.info (fun m -> m "used packages: %a"
                   Fmt.(Dump.list @@ pair ~sep:(unit ".") string string)
                   info.Mirage_info.packages) ;
     Logs.info (fun m -> m "used libraries: %a"
                   Fmt.(Dump.list string) info.Mirage_info.libraries) ;
+
+    let hostname = Domain_name.of_string_exn "nqsb.io"
+    and additional_hostnames =
+      List.map Domain_name.of_string_exn[ "tron.nqsb.io" ; "usenix15.nqsb.io" ]
+    in
+    D.retrieve_certificate stack pclock ~dns_key:(Key_gen.dns_key ())
+      ~hostname ~additional_hostnames ~key_seed:(Key_gen.key_seed ())
+      (Key_gen.dns_server ()) (Key_gen.dns_port ()) >>= fun certificates ->
+    let config = Tls.Config.server ~certificates () in
+
     let d_nqsb =
       let page = Page.render in
       [ header "text/html;charset=utf-8" (Cstruct.len page) ; page ]
@@ -145,11 +135,6 @@ struct
     read_pdf kv "nqsbtls-usenix-security15.pdf" >>= fun d_usenix ->
     read_pdf kv "tron.pdf" >>= fun d_tron ->
     let f = dispatch d_nqsb d_usenix d_tron in
-
-    read_cert keys "nqsb" >>= fun c_nqsb ->
-    read_cert keys "usenix15" >>= fun c_usenix ->
-    read_cert keys "tron" >>= fun c_tron ->
-    let config = Tls.Config.server ~certificates:(`Multiple_default (c_nqsb, [ c_usenix ; c_tron])) () in
 
     S.listen_tcpv4 stack ~port:80 h_notice ;
     S.listen_tcpv4 stack ~port:443 (tls_accept ~f config) ;
