@@ -49,7 +49,7 @@ module Main (R : RANDOM) (P : PCLOCK) (T : TIME) (S : STACKV4) (KV : KV_RO) = st
 
   let peer_tag : (Ipaddr.V4.t * int) Logs.Tag.def =
     Logs.Tag.def "peer" ~doc:"connection endpoint"
-      Fmt.(pair ~sep:(unit ":") Ipaddr.V4.pp_hum int)
+      Fmt.(pair ~sep:(unit ":") Ipaddr.V4.pp int)
 
   let tls_tag : Tls.Core.epoch_data Logs.Tag.def =
     Logs.Tag.def "tls" ~doc:"TLS parameters"
