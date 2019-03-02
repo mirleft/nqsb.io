@@ -116,7 +116,8 @@ module Main (R : RANDOM) (P : PCLOCK) (T : TIME) (S : STACKV4) (KV : KV_RO) = st
     and additional_hostnames =
       List.map Domain_name.of_string_exn[ "tron.nqsb.io" ; "usenix15.nqsb.io" ]
     in
-    D.retrieve_certificate stack pclock ~dns_key:(Key_gen.dns_key ())
+    D.retrieve_certificate ~ca:`Production
+      stack pclock ~dns_key:(Key_gen.dns_key ())
       ~hostname ~additional_hostnames ~key_seed:(Key_gen.key_seed ())
       (Key_gen.dns_server ()) (Key_gen.dns_port ()) >>= fun certificates ->
     let config = Tls.Config.server ~certificates () in
