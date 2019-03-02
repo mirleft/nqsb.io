@@ -2,7 +2,7 @@ open Mirage
 
 let net = generic_stackv4 default_network
 
-let logger = syslog_udp ~config:(syslog_config ~truncate:1484 "nqsb.io") net
+let logger = syslog_udp ~config:(syslog_config "nqsb.io") net
 
 let dns_key =
   let doc = Key.Arg.info ~doc:"nsupdate key (name:type:value,...)" ["dns-key"] in
@@ -31,6 +31,9 @@ let () =
     package "tyxml";
     package "logs" ;
     package ~sublibs:["mirage.certify"] "udns" ;
+    package ~min:"0.2.1" "logs-syslog" ;
+    package ~min:"3.7.1" "tcpip" ;
+    package ~min:"2.0.0" "mirage-kv" ;
   ] in
   register "nqsb.io" [
     foreign

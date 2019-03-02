@@ -19,21 +19,14 @@ module Main (R : RANDOM) (P : PCLOCK) (T : TIME) (S : STACKV4) (KV : KV_RO) = st
         ("Strict-Transport-Security", "max-age=31536000; includeSubDomains") ;
         ("Connection", "close") ]
 
-  let read_kv kv name =
-    KV.size kv name >>= function
-    | Error e ->
-      Logs.warn (fun m -> m "kv: error while calling size %s: %a" name KV.pp_error e);
-      Lwt.fail (invalid_arg "failed")
-    | Ok size ->
-      KV.read kv name 0L size >>= function
-      | Error e ->
-        Logs.warn (fun m -> m "kv: error while calling read %s: %a" name KV.pp_error e);
-        Lwt.fail (invalid_arg "failed")
-      | Ok bufs -> Lwt.return (Cstruct.concat bufs)
-
   let read_pdf kv name =
-    read_kv kv name >|= fun data ->
-    [ header "application/pdf" (Cstruct.len data) ; data ]
+    KV.get kv (Mirage_kv.Key.v name) >>= function
+    | Error e ->
+      Logs.warn (fun m -> m "kv: error while calling get %s: %a" name KV.pp_error e);
+      Lwt.fail (invalid_arg "failed")
+    | Ok data ->
+      let cs = Cstruct.of_string data in
+      Lwt.return [ header "application/pdf" (Cstruct.len cs) ; cs ]
 
   let stored_tags = Lwt.new_key ()
 
