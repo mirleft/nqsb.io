@@ -4,7 +4,7 @@ open Mirage_types_lwt
 module Main (R : RANDOM) (P : PCLOCK) (T : TIME) (S : STACKV4) (KV : KV_RO) = struct
   module TCP   = S.TCPV4
   module TLS   = Tls_mirage.Make (TCP)
-  module D = Dns_mirage_certify.Make(R)(P)(T)(S)
+  module D = Udns_mirage_certify.Make(R)(P)(T)(S)
 
   let http_header ~status xs =
     let headers = List.map (fun (k, v) -> k ^ ": " ^ v) xs in
@@ -117,20 +117,21 @@ module Main (R : RANDOM) (P : PCLOCK) (T : TIME) (S : STACKV4) (KV : KV_RO) = st
       List.map Domain_name.of_string_exn[ "tron.nqsb.io" ; "usenix15.nqsb.io" ]
     in
     D.retrieve_certificate ~ca:`Production
-      stack pclock ~dns_key:(Key_gen.dns_key ())
+      stack ~dns_key:(Key_gen.dns_key ())
       ~hostname ~additional_hostnames ~key_seed:(Key_gen.key_seed ())
-      (Key_gen.dns_server ()) (Key_gen.dns_port ()) >>= fun certificates ->
-    let config = Tls.Config.server ~certificates () in
+      (Key_gen.dns_server ()) (Key_gen.dns_port ()) >>= function
+    | Error (`Msg m) -> Lwt.fail_with m
+    | Ok certificates ->
+      let config = Tls.Config.server ~certificates () in
+      let d_nqsb =
+        let page = Page.render in
+        [ header "text/html;charset=utf-8" (Cstruct.len page) ; page ]
+      in
+      read_pdf kv "nqsbtls-usenix-security15.pdf" >>= fun d_usenix ->
+      read_pdf kv "tron.pdf" >>= fun d_tron ->
+      let f = dispatch d_nqsb d_usenix d_tron in
 
-    let d_nqsb =
-      let page = Page.render in
-      [ header "text/html;charset=utf-8" (Cstruct.len page) ; page ]
-    in
-    read_pdf kv "nqsbtls-usenix-security15.pdf" >>= fun d_usenix ->
-    read_pdf kv "tron.pdf" >>= fun d_tron ->
-    let f = dispatch d_nqsb d_usenix d_tron in
-
-    S.listen_tcpv4 stack ~port:80 h_notice ;
-    S.listen_tcpv4 stack ~port:443 (tls_accept ~f config) ;
-    S.listen stack
+      S.listen_tcpv4 stack ~port:80 h_notice ;
+      S.listen_tcpv4 stack ~port:443 (tls_accept ~f config) ;
+      S.listen stack
 end

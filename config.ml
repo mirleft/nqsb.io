@@ -30,7 +30,7 @@ let () =
     package ~sublibs:["mirage"] "tls";
     package "tyxml";
     package "logs" ;
-    package ~sublibs:["mirage.certify"] "udns" ;
+    package "udns-mirage-certify" ;
     package ~min:"0.2.1" "logs-syslog" ;
     package ~min:"3.7.1" "tcpip" ;
     package ~min:"2.0.0" "mirage-kv" ;
