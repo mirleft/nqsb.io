@@ -30,10 +30,11 @@ let () =
     package ~sublibs:["mirage"] "tls";
     package "tyxml";
     package "logs" ;
-    package "udns-mirage-certify" ;
+    package "dns-mirage-certify" ;
     package ~min:"0.2.1" "logs-syslog" ;
     package ~min:"3.7.1" "tcpip" ;
     package ~min:"2.0.0" "mirage-kv" ;
+    package "monitoring-experiments" ;
   ] in
   register "nqsb.io" [
     foreign
@@ -41,6 +42,6 @@ let () =
       ~keys
       ~packages
       "Unikernel.Main"
-      (random @-> pclock @-> time @-> stackv4 @-> kv_ro @-> job)
-    $ default_random $ default_posix_clock $ default_time $ net $ crunch "disk"
+      (random @-> pclock @-> mclock @-> time @-> stackv4 @-> kv_ro @-> kv_ro @-> job)
+    $ default_random $ default_posix_clock $ default_monotonic_clock $ default_time $ net $ crunch "tls" $ crunch "disk"
   ]
