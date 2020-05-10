@@ -50,7 +50,6 @@ let () =
   ] in
   register "nqsb.io" [
     foreign
-      ~deps:[ abstract nocrypto ; abstract app_info ]
       ~keys
       ~packages
       "Unikernel.Main"

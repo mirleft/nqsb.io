@@ -4,31 +4,8 @@ module Main (C : Mirage_console.S) (R : Mirage_random.S) (T : Mirage_time.S) (M 
   module TCP   = S.TCPV4
   module TLS   = Tls_mirage.Make (TCP)
 
-  let create ~f =
-    let data : (string, int) Hashtbl.t = Hashtbl.create 7 in
-    (fun x ->
-       let key = f x in
-       let cur = match Hashtbl.find_opt data key with
-         | None -> 0
-         | Some x -> x
-       in
-       Hashtbl.replace data key (succ cur)),
-    (fun () ->
-       let data, total =
-         Hashtbl.fold (fun key value (acc, total) ->
-             (Metrics.uint key value :: acc), value + total)
-           data ([], 0)
-       in
-       Metrics.uint "total" total :: data)
-
-  let counter_metrics ~f name =
-    let open Metrics in
-    let doc = "Counter metrics" in
-    let incr, get = create ~f in
-    let data thing = incr thing; Data.v (get ()) in
-    Src.v ~doc ~tags:Metrics.Tags.[] ~data name
-
-  let http_status = counter_metrics ~f:(fun x -> x) "nqsbio"
+  let http_resource =
+    Monitoring_experiments.counter_metrics ~f:(fun x -> x) "nqsbio"
 
   let http_header ~status xs =
     let headers = List.map (fun (k, v) -> k ^ ": " ^ v) xs in
@@ -70,7 +47,7 @@ module Main (C : Mirage_console.S) (R : Mirage_random.S) (T : Mirage_time.S) (M 
       [ ("location", "https://nqsb.io") ]
 
   let h_notice tcp =
-    Metrics.add http_status (fun x -> x) (fun d -> d "http");
+    Metrics.add http_resource (fun x -> x) (fun d -> d "http");
     TCP.write tcp moved_permanently >>= fun r ->
     (match r with
      | Error e -> Logs.warn (fun m -> m  "TCP error %a" TCP.pp_write_error e)
@@ -91,14 +68,14 @@ module Main (C : Mirage_console.S) (R : Mirage_random.S) (T : Mirage_time.S) (M 
         | Some x -> x, nqsb
         | None -> "none", nqsb
       in
-      Metrics.add http_status (fun x -> x) (fun d -> d name);
+      Metrics.add http_resource (fun x -> x) (fun d -> d name);
       data
 
   module D = Dns_certify_mirage.Make(R)(P)(T)(S)
   module Monitoring = Monitoring_experiments.Make(T)(Management)
   module Syslog = Logs_syslog_mirage.Udp(C)(P)(Management)
 
-  let start c _random _time _mclock _pclock stack kv management _ info =
+  let start c _random _time _mclock _pclock stack kv management =
     let hostname = Key_gen.name ()
     and syslog = Key_gen.syslog ()
     and monitor = Key_gen.monitor ()
@@ -111,8 +88,6 @@ module Main (C : Mirage_console.S) (R : Mirage_random.S) (T : Mirage_time.S) (M 
       Logs.warn (fun m -> m "no monitor specified, not outputting statistics")
     else
       Monitoring.create ~hostname monitor management;
-    List.iter (fun (p, v) -> Logs.app (fun m -> m "used package: %s %s" p v))
-      info.Mirage_info.packages;
     let hostname = Domain_name.(of_string_exn "nqsb.io" |> host_exn)
     and additional_hostnames =
       List.map (fun s -> Domain_name.(of_string_exn s |> host_exn))
