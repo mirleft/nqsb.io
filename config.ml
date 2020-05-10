@@ -39,7 +39,7 @@ let management_stack = generic_stackv4 ~group:"management" (netif ~group:"manage
 
 let () =
   let packages = [
-    package ~sublibs:["mirage"] "tls";
+    package "tls-mirage";
     package "tyxml";
     package "logs" ;
     package ~sublibs:["mirage"] "dns-certify" ;
