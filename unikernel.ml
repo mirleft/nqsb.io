@@ -93,7 +93,7 @@ module Main (C : Mirage_console.S) (R : Mirage_random.S) (T : Mirage_time.S) (M 
       List.map (fun s -> Domain_name.(of_string_exn s |> host_exn))
         [ "tron.nqsb.io" ; "usenix15.nqsb.io" ]
     in
-    D.retrieve_certificate ~ca:`Production
+    D.retrieve_certificate
       stack ~dns_key:(Key_gen.dns_key ())
       ~hostname ~additional_hostnames ~key_seed:(Key_gen.key_seed ())
       (Key_gen.dns_server ()) (Key_gen.dns_port ()) >>= function
