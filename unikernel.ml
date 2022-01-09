@@ -1,6 +1,6 @@
 open Lwt.Infix
 
-module Main (C : Mirage_console.S) (T : Mirage_time.S) (P : Mirage_clock.PCLOCK) (S : Mirage_stack.V4V6) (KV : Mirage_kv.RO) (Management : Mirage_stack.V4V6) = struct
+module Main (C : Mirage_console.S) (T : Mirage_time.S) (P : Mirage_clock.PCLOCK) (S : Tcpip.Stack.V4V6) (KV : Mirage_kv.RO) (Management : Tcpip.Stack.V4V6) = struct
   let http_resource =
     Monitoring_experiments.counter_metrics ~f:(fun x -> x) "nqsbio"
 
@@ -24,7 +24,7 @@ module Main (C : Mirage_console.S) (T : Mirage_time.S) (P : Mirage_clock.PCLOCK)
       Lwt.fail (invalid_arg "failed")
     | Ok data ->
       let cs = Cstruct.of_string data in
-      Lwt.return [ header "application/pdf" (Cstruct.len cs) ; cs ]
+      Lwt.return [ header "application/pdf" (Cstruct.length cs) ; cs ]
 
   let reply name data tcp =
     (S.TCP.writev tcp data >|= function
@@ -50,12 +50,12 @@ module Main (C : Mirage_console.S) (T : Mirage_time.S) (P : Mirage_clock.PCLOCK)
      | Some ip -> Monitoring.create ~hostname ip management);
     let d_nqsb =
       let page = Page.render in
-      [ header "text/html;charset=utf-8" (Cstruct.len page) ; page ]
+      [ header "text/html;charset=utf-8" (Cstruct.length page) ; page ]
     in
     read_pdf kv "nqsbtls-usenix-security15.pdf" >>= fun d_usenix ->
     read_pdf kv "tron.pdf" >>= fun d_tron ->
-    S.listen_tcp stack ~port:3000 (reply "nqsb" d_nqsb);
-    S.listen_tcp stack ~port:3001 (reply "usenix" d_usenix);
-    S.listen_tcp stack ~port:3002 (reply "tron" d_tron);
+    S.TCP.listen (S.tcp stack) ~port:3000 (reply "nqsb" d_nqsb);
+    S.TCP.listen (S.tcp stack) ~port:3001 (reply "usenix" d_usenix);
+    S.TCP.listen (S.tcp stack) ~port:3002 (reply "tron" d_tron);
     S.listen stack
 end
