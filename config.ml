@@ -27,7 +27,7 @@ let () =
     package ~sublibs:["mirage"] ~min:"0.3.0" "logs-syslog" ;
     package ~min:"3.7.1" "tcpip" ;
     package ~min:"2.0.0" "mirage-kv" ;
-    package ~min:"0.0.2" "monitoring-experiments" ;
+    package "mirage-monitoring" ;
   ] in
   register "nqsb.io" [
     foreign

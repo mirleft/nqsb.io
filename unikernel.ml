@@ -2,7 +2,7 @@ open Lwt.Infix
 
 module Main (C : Mirage_console.S) (T : Mirage_time.S) (P : Mirage_clock.PCLOCK) (S : Tcpip.Stack.V4V6) (KV : Mirage_kv.RO) (Management : Tcpip.Stack.V4V6) = struct
   let http_resource =
-    Monitoring_experiments.counter_metrics ~f:(fun x -> x) "nqsbio"
+    Mirage_monitoring.counter_metrics ~f:(fun x -> x) "nqsbio"
 
   let http_header ~status xs =
     let headers = List.map (fun (k, v) -> k ^ ": " ^ v) xs in
@@ -34,7 +34,7 @@ module Main (C : Mirage_console.S) (T : Mirage_time.S) (P : Mirage_clock.PCLOCK)
     S.TCP.close tcp >|= fun () ->
     Metrics.add http_resource (fun x -> x) (fun d -> d name);
 
-  module Monitoring = Monitoring_experiments.Make(T)(Management)
+  module Monitoring = Mirage_monitoring.Make(T)(P)(Management)
   module Syslog = Logs_syslog_mirage.Udp(C)(P)(Management)
 
   let start c _time _pclock stack kv management =
