@@ -13,7 +13,7 @@ let name =
   Key.(create "name" Arg.(opt string "nqsb.io" doc))
 
 let keys = [
-  Key.abstract name ; Key.abstract monitor ; Key.abstract syslog
+  Key.v name ; Key.v monitor ; Key.v syslog
 ]
 
 let net = generic_stackv4v6 default_network
@@ -29,7 +29,7 @@ let () =
     package ~min:"2.0.0" "mirage-kv" ;
     package "mirage-monitoring" ;
   ] in
-  register "nqsb.io" [
+  register "nqsbio" [
     foreign
       ~keys
       ~packages
