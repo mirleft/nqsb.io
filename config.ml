@@ -24,7 +24,7 @@ let () =
   let packages = [
     package "tyxml";
     package "logs" ;
-    package ~sublibs:["mirage"] ~min:"0.3.0" "logs-syslog" ;
+    package ~sublibs:["mirage"] ~min:"0.4.0" "logs-syslog" ;
     package ~min:"3.7.1" "tcpip" ;
     package ~min:"2.0.0" "mirage-kv" ;
     package "mirage-monitoring" ;
@@ -34,6 +34,6 @@ let () =
       ~keys
       ~packages
       "Unikernel.Main"
-      (console @-> time @-> pclock @-> stackv4v6 @-> kv_ro @-> stackv4v6 @-> job)
-    $ default_console $ default_time $ default_posix_clock $ net $ crunch "disk" $ management_stack
+      (time @-> pclock @-> stackv4v6 @-> kv_ro @-> stackv4v6 @-> job)
+    $ default_time $ default_posix_clock $ net $ crunch "disk" $ management_stack
   ]

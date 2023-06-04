@@ -1,6 +1,6 @@
 open Lwt.Infix
 
-module Main (C : Mirage_console.S) (T : Mirage_time.S) (P : Mirage_clock.PCLOCK) (S : Tcpip.Stack.V4V6) (KV : Mirage_kv.RO) (Management : Tcpip.Stack.V4V6) = struct
+module Main (T : Mirage_time.S) (P : Mirage_clock.PCLOCK) (S : Tcpip.Stack.V4V6) (KV : Mirage_kv.RO) (Management : Tcpip.Stack.V4V6) = struct
   let http_resource =
     Mirage_monitoring.counter_metrics ~f:(fun x -> x) "nqsbio"
 
@@ -35,16 +35,16 @@ module Main (C : Mirage_console.S) (T : Mirage_time.S) (P : Mirage_clock.PCLOCK)
     Metrics.add http_resource (fun x -> x) (fun d -> d name);
 
   module Monitoring = Mirage_monitoring.Make(T)(P)(Management)
-  module Syslog = Logs_syslog_mirage.Udp(C)(P)(Management)
+  module Syslog = Logs_syslog_mirage.Udp(P)(Management)
 
-  let start c _time _pclock stack kv management =
+  let start _time _pclock stack kv management =
     let hostname = Key_gen.name ()
     and syslog = Key_gen.syslog ()
     and monitor = Key_gen.monitor ()
     in
     (match syslog with
      | None -> Logs.warn (fun m -> m "no syslog specified, dumping on stdout")
-     | Some ip -> Logs.set_reporter (Syslog.create c management ip ~hostname ()));
+     | Some ip -> Logs.set_reporter (Syslog.create management ip ~hostname ()));
     (match monitor with
      | None -> Logs.warn (fun m -> m "no monitor specified, not outputting statistics")
      | Some ip -> Monitoring.create ~hostname ip management);
